@@ -1,37 +1,30 @@
-
-import java.util.concurrent.Executor
-
 import akka.actor.ActorSystem
-import com.ning.http.client.AsyncHttpClient
-import org.openqa.selenium.WebDriver
-import org.openqa.selenium.chrome.{ChromeDriver, ChromeOptions}
-import scraping.actors.WebScraper
-import scraping.web.{AsyncScrapingService, SeleniumScrapingService}
+import scraping.actors.Receptionist
 
 import scala.concurrent._
 import ExecutionContext.Implicits.global
+import akka.pattern.ask
+import akka.util.Timeout
+import scala.concurrent.duration._
 
-class Main {
-
-}
-
-object Main {
+object Main extends ScrapingModule {
   def main(args: Array[String]): Unit = {
 
-//    val options = new ChromeOptions
-//    options.addArguments("--headless")
-//    val driver: WebDriver = new ChromeDriver(options)
-//    val scp = new SeleniumScrapingService(driver)
-
-
-    val httpClient = new AsyncHttpClient
-    val async = new AsyncScrapingService(httpClient)
+    implicit val timeout = Timeout(3 seconds)
 
     val system = ActorSystem("testSystem")
-    val firstRef = system.actorOf(WebScraper.props("https://www.google.com", async), "act")
+    val receptionst = system.actorOf(Receptionist.props(asyncScrapingService, htmlParsingService))
 
-    //async.getUrlContent("https://www.seleniumhq.org/docs/03_webdriver.jsp#webdriver-and-the-selenium-server").foreach(println)
-    //val d = scp.getUrlContent("https://www.seleniumhq.org/docs/03_webdriver.jsp#webdriver-and-the-selenium-server")
-    //println(d)
+    val response = receptionst ? Receptionist.GetUrls("https://en.wikipedia.org/wiki/Main_Page", 0)
+    val result = Await.result(response, timeout.duration).asInstanceOf[Receptionist.UrlsFetched]
+
+    for {
+      url <- result.urls
+      _ = println(url)
+    } yield ()
+
+    system.stop(receptionst)
+    asyncHttpClient.close()
+    Await.result(system.terminate, timeout.duration)
   }
 }
