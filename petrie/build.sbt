@@ -35,3 +35,4 @@ lazy val petrie = (project in file("."))
 fork in Test := true
 
 libraryDependencies += guice
+libraryDependencies += evolutions
