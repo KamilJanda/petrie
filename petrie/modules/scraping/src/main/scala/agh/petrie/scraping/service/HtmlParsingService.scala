@@ -1,7 +1,7 @@
-package scraping.service
+package agh.petrie.scraping.service
 
 import org.jsoup.Jsoup
-import scraping.web.AsyncScrapingService.Html
+import agh.petrie.scraping.web.AsyncScrapingService.Html
 import scala.collection.JavaConverters._
 
 class HtmlParsingService {

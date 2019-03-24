@@ -16,7 +16,7 @@ object Dependencies {
 
   val time = Seq(
     "com.github.tototoshi" %% "slick-joda-mapper" % "2.4.0",
-  "joda-time" % "joda-time" % "2.9.9",
+    "joda-time" % "joda-time" % "2.9.9",
     "org.joda" % "joda-convert" % "1.9.2"
   )
 
@@ -28,6 +28,7 @@ object Dependencies {
   val play = Seq(
     "com.typesafe.play" %% "play-ahc-ws" % "2.7.0" % Test,
     "com.typesafe.play" %% "play" % "2.7.0",
+    "com.typesafe.play" %% "play-json" % "2.7.0",
     "com.typesafe.slick" %% "slick" % "3.3.0" exclude("com.zaxxer", "HikariCP-java6"),
     "com.typesafe.play" %% "play-slick-evolutions" % "3.0.0" exclude("com.zaxxer", "HikariCP-java6")
   )
@@ -46,5 +47,10 @@ object Dependencies {
     "org.postgresql" % "postgresql" % "42.2.5"
   )
 
-  val all = akka ++ selenium ++ macWire ++ others ++ play ++ guice ++ database ++ time
+  val cats = Seq(
+    "org.typelevel" %% "cats-effect" % "1.2.0",
+    "org.typelevel" %% "cats-core" % "1.6.0"
+  )
+
+  val all = akka ++ selenium ++ macWire ++ others ++ play ++ guice ++ database ++ time ++ cats
 }

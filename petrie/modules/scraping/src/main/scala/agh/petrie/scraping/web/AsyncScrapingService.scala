@@ -1,8 +1,8 @@
-package scraping.web
+package agh.petrie.scraping.web
 
 import java.util.concurrent.Executor
 import com.ning.http.client.{AsyncHttpClient, ListenableFuture, Response}
-import scraping.web.AsyncScrapingService.{BadStatus, Html}
+import agh.petrie.scraping.web.AsyncScrapingService.{BadStatus, Html}
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
 class AsyncScrapingService(asyncHttpClient: AsyncHttpClient) {

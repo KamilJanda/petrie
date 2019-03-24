@@ -1,9 +1,9 @@
-package scraping.actors
+package agh.petrie.scraping.actors
 
 import akka.actor.{Actor, ActorRef, Props}
-import scraping.actors.Controller.{CheckDone, CheckUrl}
-import scraping.service.HtmlParsingService
-import scraping.web.AsyncScrapingService
+import agh.petrie.scraping.actors.Controller.{CheckDone, CheckUrl}
+import agh.petrie.scraping.service.HtmlParsingService
+import agh.petrie.scraping.web.AsyncScrapingService
 
 class Controller(asyncScrapingService: AsyncScrapingService, htmlParsingService: HtmlParsingService) extends Actor {
 
@@ -12,7 +12,7 @@ class Controller(asyncScrapingService: AsyncScrapingService, htmlParsingService:
       context.become(checkingUrls(Set.empty, Set.empty, sender))
       self ! message
 
-    case CheckUrl(url, _) => sender ! Receptionist.UrlsFetched(Set(url))
+    case CheckUrl(url, _) => sender ! Receptionist.FetchedUrls(Set(url))
   }
 
 
@@ -26,7 +26,7 @@ class Controller(asyncScrapingService: AsyncScrapingService, htmlParsingService:
 
     case CheckDone =>
       if ((children - sender).isEmpty) {
-        receptionist ! Receptionist.UrlsFetched(urls)
+        receptionist ! Receptionist.FetchedUrls(urls)
         context.stop(self)
       } else {
         context.become(checkingUrls(children - sender, urls, receptionist))

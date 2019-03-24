@@ -1,4 +1,4 @@
-package com.agh.petrie.model.infra
+package agh.petrie.core.model.infra
 
 import org.joda.time.DateTime
 import scala.concurrent.{Future, Await}

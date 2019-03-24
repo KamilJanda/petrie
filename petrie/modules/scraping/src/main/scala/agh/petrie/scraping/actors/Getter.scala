@@ -1,11 +1,11 @@
-package scraping.actors
+package agh.petrie.scraping.actors
 
 import akka.actor.{Actor, Props}
 import akka.pattern.pipe
-import scraping.actors.Controller.CheckUrl
-import scraping.service.HtmlParsingService
-import scraping.web.AsyncScrapingService
-import scraping.web.AsyncScrapingService.Html
+import agh.petrie.scraping.actors.Controller.CheckUrl
+import agh.petrie.scraping.service.HtmlParsingService
+import agh.petrie.scraping.web.AsyncScrapingService
+import agh.petrie.scraping.web.AsyncScrapingService.Html
 
 class Getter(
   url:                  String,

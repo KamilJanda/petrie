@@ -1,10 +1,10 @@
-package scraping.actors
+package agh.petrie.scraping.actors
 
 import akka.actor.{Actor, ActorRef, Props}
-import scraping.actors.Controller.CheckUrl
-import scraping.actors.Receptionist.{GetUrls, Job, UrlsFetched}
-import scraping.service.HtmlParsingService
-import scraping.web.AsyncScrapingService
+import agh.petrie.scraping.actors.Controller.CheckUrl
+import agh.petrie.scraping.actors.Receptionist.{GetUrls, Job, FetchedUrls}
+import agh.petrie.scraping.service.HtmlParsingService
+import agh.petrie.scraping.web.AsyncScrapingService
 
 class Receptionist(asyncScrapingService: AsyncScrapingService, htmlParsingService: HtmlParsingService) extends Actor {
 
@@ -15,7 +15,7 @@ class Receptionist(asyncScrapingService: AsyncScrapingService, htmlParsingServic
   }
 
   def working(jobs: Vector[Job]): Receive = {
-    case message: UrlsFetched =>
+    case message: FetchedUrls =>
       val job = jobs.head
       job.client !  message
       runNextJob(jobs.tail)
@@ -40,7 +40,7 @@ object Receptionist {
     Props(new Receptionist(asyncScrapingService, htmlParsingService))
 
   case class GetUrls(rootUrl: String, depth: Int)
-  case class UrlsFetched(urls: Set[String])
+  case class FetchedUrls(urls: Set[String])
 
   private case class Job(client: ActorRef, action: Controller.CheckUrl)
 }

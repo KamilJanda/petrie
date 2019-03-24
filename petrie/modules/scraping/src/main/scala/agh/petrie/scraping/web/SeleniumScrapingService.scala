@@ -1,4 +1,4 @@
-package scraping.web
+package agh.petrie.scraping.web
 
 import org.openqa.selenium.WebDriver
 

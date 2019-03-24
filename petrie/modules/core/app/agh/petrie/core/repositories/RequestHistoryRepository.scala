@@ -1,9 +1,9 @@
-package com.agh.petrie.repositories
+package agh.petrie.core.repositories
 
 import javax.inject.Singleton
 
-import com.agh.petrie.model.infra.{RequestHistories, RequestHistoryRow}
-import com.agh.petrie.model.view.FetchLinksRequest
+import agh.petrie.core.model.infra.{RequestHistories, RequestHistoryRow}
+import agh.petrie.core.model.view.FetchLinksRequest
 import slick.lifted.{Compiled, Rep}
 import slick.jdbc.PostgresProfile.api._
 import io.scalaland.chimney.dsl._

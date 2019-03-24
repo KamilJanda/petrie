@@ -1,4 +1,4 @@
-package com.agh.petrie.model.view
+package agh.petrie.core.model.view
 
 import play.api.libs.json.Json
 
