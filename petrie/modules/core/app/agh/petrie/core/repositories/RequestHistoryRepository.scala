@@ -24,7 +24,7 @@ sealed trait RequestHistoryQueries {
 
 }
 
-sealed abstract class RequestHistoryDao extends RequestHistoryQueries{
+sealed class RequestHistoryDao extends RequestHistoryQueries{
 
   def findById(id: Long)(implicit ec: ExecutionContext): DBIO[Option[RequestHistoryRow]] = {
     byId(id).result.map(_.headOption)
@@ -39,7 +39,7 @@ sealed abstract class RequestHistoryDao extends RequestHistoryQueries{
 @Singleton
 class RequestHistoryRepository {
 
-  val requestHistoryDao = new RequestHistoryDao {}
+  val requestHistoryDao = new RequestHistoryDao()
 
   def save(fetchLinksRequest: FetchLinksRequest): DBIO[Int] = {
     requestHistoryDao.save(toEntity(fetchLinksRequest))
