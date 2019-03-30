@@ -3,5 +3,5 @@
 # ~~~~
 
 # Home page
-GET     /                           @com.agh.petrie.controllers.HomeController.index
+POST     /links     @agh.petrie.core.controllers.FetchingLinksController.fetchLinks
 
