@@ -1,10 +1,9 @@
 package agh.petrie.scraping.actors
 
-import akka.actor.{Actor, ActorRef, Props}
-import agh.petrie.scraping.actors.Controller.CheckUrl
-import agh.petrie.scraping.actors.Receptionist.{GetUrls, Job, FetchedUrls}
+import agh.petrie.scraping.actors.Receptionist.{FetchedUrls, GetUrls, Job}
 import agh.petrie.scraping.service.HtmlParsingService
 import agh.petrie.scraping.web.AsyncScrapingService
+import akka.actor.{Actor, ActorRef, Props}
 
 class Receptionist(asyncScrapingService: AsyncScrapingService, htmlParsingService: HtmlParsingService) extends Actor {
 
@@ -19,7 +18,6 @@ class Receptionist(asyncScrapingService: AsyncScrapingService, htmlParsingServic
       val job = jobs.head
       job.client !  message
       runNextJob(jobs.tail)
-
     case GetUrls(url, depth) => context.become(working(jobs :+ Job(sender, Controller.CheckUrl(url, depth))))
   }
 
@@ -33,6 +31,7 @@ class Receptionist(asyncScrapingService: AsyncScrapingService, htmlParsingServic
       working(jobs)
     }
   }
+
 }
 
 object Receptionist {

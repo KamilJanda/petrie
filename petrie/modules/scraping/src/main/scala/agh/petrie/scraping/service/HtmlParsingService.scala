@@ -12,6 +12,6 @@ class HtmlParsingService {
     val absUrls = for {
       url <- urls.iterator().asScala
     } yield url.absUrl("href")
-    absUrls.toSeq
+    absUrls.toSeq.filter(_ != "")
   }
 }

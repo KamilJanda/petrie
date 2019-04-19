@@ -4,7 +4,8 @@ import sbt.{Resolver, _}
 object Dependencies {
 
   val akka = Seq(
-    "com.typesafe.akka" %% "akka-actor" % "2.5.21"
+    "com.typesafe.akka" %% "akka-actor" % "2.5.21",
+    "com.typesafe.akka" %% "akka-stream-typed" % "2.5.21"
   )
 
   val others = Seq(
