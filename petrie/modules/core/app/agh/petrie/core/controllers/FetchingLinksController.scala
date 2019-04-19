@@ -4,18 +4,21 @@ import javax.inject.{Inject, Singleton}
 
 import agh.petrie.core.WebScraperProvider
 import agh.petrie.core.model.view.FetchLinksRequest
-import play.api.libs.json.{JsError, Json}
-import play.api.mvc._
 import agh.petrie.core.model.view.FetchLinksRequest._
 import agh.petrie.core.model.view.FetchedUrlsView._
+import agh.petrie.core.model.view.WebSocketFormat._
 import agh.petrie.core.repositories.RequestHistoryRepository
-import agh.petrie.scraping.WebScraper
+import agh.petrie.core.viewconverters.FetchedUrlsViewConverter
+import agh.petrie.scraping.actors.AsyncReceptionist.GetUrlsAsync
+import agh.petrie.scraping.api.BasicScrapingApi.Protocol
+import akka.actor.ActorSystem
 import akka.util.Timeout
+import play.api.db.slick.DatabaseConfigProvider
+import play.api.libs.json.{JsError, Json}
+import play.api.libs.streams.ActorFlow
+import play.api.mvc.{AbstractController, ControllerComponents, WebSocket}
 
 import scala.concurrent.duration._
-import play.api.db.slick.DatabaseConfigProvider
-import agh.petrie.core.viewconverters.FetchedUrlsViewConverter
-
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -25,11 +28,12 @@ class FetchingLinksController @Inject()(
   dbConfigProvider: DatabaseConfigProvider,
   webScraperProvider: WebScraperProvider,
   fetchedUrlsViewConverter: FetchedUrlsViewConverter
-)(implicit ec: ExecutionContext, materialize: akka.stream.Materializer) extends AbstractController(cc) {
+)(implicit ec: ExecutionContext, materialize: akka.stream.Materializer, as: ActorSystem) extends AbstractController(cc) {
 
-  implicit val timeout = Timeout(10 seconds)
+
 
   def fetchLinks = Action.async(parse.json) { implicit  request =>
+    implicit val timeout = Timeout(10 seconds)
     request.body.validate[FetchLinksRequest].fold(
       errors => Future {BadRequest(Json.obj("status" ->"KO", "message" -> JsError.toJson(errors)))},
       fetchLinksRequest => {
@@ -42,12 +46,12 @@ class FetchingLinksController @Inject()(
     )
   }
 
-  def fetchLinksStream = Action(parse.json) { implicit request =>
-    import agh.petrie.core.model.view.WebScraperWrites._
-    request.body.validate[FetchLinksRequest].fold(
-      errors =>  BadRequest(Json.obj("status" ->"KO", "message" -> JsError.toJson(errors))),
-      fetchLinksRequest => Ok.chunked(webScraperProvider.get.fetchLinksAsync(fetchLinksRequest.url, fetchLinksRequest.depth))
-    )
+  def fetchLinksStream = WebSocket.accept[GetUrlsAsync, Protocol] { request =>
+    ActorFlow.actorRef { out =>
+      webScraperProvider.get.fetchLinksAsync(out)
+    }
   }
+
+
 
 }

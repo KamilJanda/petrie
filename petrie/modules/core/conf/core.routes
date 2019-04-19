@@ -5,5 +5,5 @@
 # Home page
 POST     /links           @agh.petrie.core.controllers.FetchingLinksController.fetchLinks
 
-POST     /links/async     @agh.petrie.core.controllers.FetchingLinksController.fetchLinksStream
+GET     /links/async      @agh.petrie.core.controllers.FetchingLinksController.fetchLinksStream
 

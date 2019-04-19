@@ -1,11 +1,10 @@
 package agh.petrie.scraping.actors
 
-import akka.actor.{Actor, ActorRef, Props}
 import agh.petrie.scraping.actors.Controller.{CheckDone, CheckUrl, CheckUrlAsync}
-import agh.petrie.scraping.api.BasicScrapingApi
-import agh.petrie.scraping.api.BasicScrapingApi.{Complete, Message, Protocol}
+import agh.petrie.scraping.api.BasicScrapingApi.{Complete, Message}
 import agh.petrie.scraping.service.HtmlParsingService
 import agh.petrie.scraping.web.AsyncScrapingService
+import akka.actor.{Actor, ActorRef, PoisonPill, Props}
 
 class Controller(asyncScrapingService: AsyncScrapingService, htmlParsingService: HtmlParsingService) extends Actor {
 
@@ -14,16 +13,17 @@ class Controller(asyncScrapingService: AsyncScrapingService, htmlParsingService:
       context.become(checkingUrls(Set.empty, Set.empty, sender))
       self ! message
 
-    case message @ CheckUrlAsync(_, depth, ref) if depth >= 0 =>
+    case CheckUrlAsync(url, depth, ref) if depth >= 0 =>
       context.become(checkingUrlsAsync(Set.empty, Set.empty, ref))
-      self ! message
+      self ! CheckUrl(url, depth)
 
     case CheckUrl(url, _) => sender ! Receptionist.FetchedUrls(Set(url))
+
   }
 
 
   def checkingUrls(children: Set[ActorRef], urls: Set[String], receptionist: ActorRef): Receive = {
-    case CheckUrl(url, depth) if depth >= 0 && url != "" =>
+    case CheckUrl(url, depth) if depth >= 0 =>
       val worker = context.actorOf(Getter.props(url, depth, asyncScrapingService, htmlParsingService))
       context.become(checkingUrls(children + worker, urls + url, receptionist))
 
@@ -42,25 +42,24 @@ class Controller(asyncScrapingService: AsyncScrapingService, htmlParsingService:
   def checkingUrlsAsync(
     children: Set[ActorRef],
     urls: Set[String],
-    stream: akka.actor.typed.ActorRef[Protocol]
+    socketActor: ActorRef
   ): Receive = {
     case CheckUrl(url, depth) if depth >= 0 =>
-      println(url)
       val worker = context.actorOf(Getter.props(url, depth, asyncScrapingService, htmlParsingService))
-      stream ! Message(url)
-      context.become(checkingUrlsAsync(children + worker, urls + url, stream))
+      socketActor ! Message(url)
+      context.become(checkingUrlsAsync(children + worker, urls + url, socketActor))
 
     case CheckUrl(url, _) =>
-      println(url)
-      stream ! Message(url)
-      context.become(checkingUrlsAsync(children, urls + url, stream))
+      socketActor ! Message(url)
+      context.become(checkingUrlsAsync(children, urls + url, socketActor))
 
     case CheckDone =>
       if ((children - sender).isEmpty) {
-        stream ! Complete
+        socketActor ! Complete
+        socketActor ! PoisonPill
         context.stop(self)
       } else {
-        context.become(checkingUrlsAsync(children - sender, urls, stream))
+        context.become(checkingUrlsAsync(children - sender, urls, socketActor))
       }
   }
 }
@@ -71,6 +70,6 @@ object Controller {
     Props(new Controller(asyncScrapingService, htmlParsingService))
 
   case class CheckUrl(url: String, depth: Int)
-  case class CheckUrlAsync(url: String, depth: Int, streamRef: akka.actor.typed.ActorRef[BasicScrapingApi.Protocol])
+  case class CheckUrlAsync(url: String, depth: Int, streamRef: ActorRef)
   case object CheckDone
 }
