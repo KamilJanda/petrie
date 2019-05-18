@@ -28,7 +28,10 @@ lazy val petrie = (project in file("."))
   .enablePlugins(PlayScala)
   .aggregate(core, scraping, common)
   .dependsOn(core, scraping, common)
-  .settings(libraryDependencies ++= Dependencies.all)
+  .settings(
+    libraryDependencies ++= Dependencies.all,
+    watchSources ++= (baseDirectory.value / "web-client/public/ui" ** "*").get
+  )
 
 
 // Automatic database migration available in testing
@@ -36,3 +39,5 @@ fork in Test := true
 
 libraryDependencies += guice
 libraryDependencies += evolutions
+
+PlayKeys.playRunHooks += WebClientRunHook(baseDirectory.value)
