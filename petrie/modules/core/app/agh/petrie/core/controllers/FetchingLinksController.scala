@@ -33,7 +33,7 @@ class FetchingLinksController @Inject()(
 
 
   def fetchLinks = Action.async(parse.json) { implicit  request =>
-    implicit val timeout = Timeout(10 seconds)
+    implicit val timeout = Timeout(60 seconds)
     request.body.validate[FetchLinksRequest].fold(
       errors => Future {BadRequest(Json.obj("status" ->"KO", "message" -> JsError.toJson(errors)))},
       fetchLinksRequest => {

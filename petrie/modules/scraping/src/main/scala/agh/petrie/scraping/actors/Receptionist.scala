@@ -10,15 +10,18 @@ class Receptionist(asyncScrapingService: AsyncScrapingService, htmlParsingServic
   override def receive: Receive = idle
 
   def idle: Receive = {
-    case GetUrls(url, depth) => context.become(runNextJob(Vector(Job(sender, Controller.CheckUrl(url, depth)))))
+    case GetUrls(url, depth) =>
+      context.become(runNextJob(Vector(Job(sender, Controller.CheckUrl(url, depth)))))
   }
 
   def working(jobs: Vector[Job]): Receive = {
     case message: FetchedUrls =>
+      println(message)
       val job = jobs.head
       job.client !  message
-      runNextJob(jobs.tail)
-    case GetUrls(url, depth) => context.become(working(jobs :+ Job(sender, Controller.CheckUrl(url, depth))))
+      context.become(runNextJob(jobs.tail))
+    case GetUrls(url, depth) =>
+      context.become(working(jobs :+ Job(sender, Controller.CheckUrl(url, depth))))
   }
 
   private def runNextJob(jobs: Vector[Job]): Receive = {
