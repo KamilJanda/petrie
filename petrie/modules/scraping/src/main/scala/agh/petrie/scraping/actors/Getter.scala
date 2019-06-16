@@ -2,6 +2,7 @@ package agh.petrie.scraping.actors
 
 import agh.petrie.scraping.actors.Controller.CheckUrl
 import agh.petrie.scraping.actors.Getter.Stop
+import agh.petrie.scraping.model.Configuration
 import agh.petrie.scraping.service.HtmlParsingService
 import agh.petrie.scraping.web.AsyncScrapingService
 import agh.petrie.scraping.web.AsyncScrapingService.Html
@@ -13,6 +14,7 @@ import scala.concurrent.duration._
 class Getter(
   url:                  String,
   depth:                Int,
+  configuration:        Configuration,
   asyncScrapingService: AsyncScrapingService,
   htmlParsingService:   HtmlParsingService
 ) extends Actor {
@@ -24,8 +26,8 @@ class Getter(
 
   override def receive: Receive = {
     case html: Html =>
-      htmlParsingService.fetchUrls(html).foreach{ url =>
-        context.parent ! CheckUrl(url, depth - 1)
+      htmlParsingService.fetchUrls(html, configuration).foreach{ url =>
+        context.parent ! CheckUrl(url, depth - 1, configuration)
       }
       context.parent ! Controller.CheckDone
       context.stop(self)
@@ -40,8 +42,9 @@ object Getter {
     url: String,
     depth: Int,
     asyncScrapingService: AsyncScrapingService,
-    htmlParsingService: HtmlParsingService
-  ) = Props(new Getter(url, depth, asyncScrapingService, htmlParsingService))
+    htmlParsingService: HtmlParsingService,
+    configuration: Configuration
+  ) = Props(new Getter(url, depth, configuration, asyncScrapingService, htmlParsingService))
 
   case object Stop
 }

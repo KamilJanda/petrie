@@ -1,6 +1,6 @@
 package agh.petrie.scraping
 
-import agh.petrie.scraping.service.HtmlParsingService
+import agh.petrie.scraping.service.{HtmlParsingService, UrlRegexMatchingService}
 import agh.petrie.scraping.web.{AsyncScrapingService, SeleniumScrapingService}
 import com.ning.http.client.AsyncHttpClient
 import com.softwaremill.macwire._
@@ -11,6 +11,7 @@ trait ScrapingModule {
 
   private[scraping] lazy val asyncHttpClient = wire[AsyncHttpClient]
   private[scraping] lazy val htmlParsingService = wire[HtmlParsingService]
+  private[scraping] lazy val urlRegexMatchingService = wire[UrlRegexMatchingService]
   private[scraping] lazy val asyncScrapingService = wire[AsyncScrapingService]
 
   private[scraping] lazy val options = wire[ChromeOptions]

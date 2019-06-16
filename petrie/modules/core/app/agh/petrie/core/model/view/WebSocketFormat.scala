@@ -5,7 +5,9 @@ import agh.petrie.scraping.api.BasicScrapingApi._
 import play.api.libs.json.Json
 import play.api.mvc.WebSocket.MessageFlowTransformer
 
+
 object WebSocketFormat {
+  import agh.petrie.core.model.view.FetchLinksRequest._
 
   implicit lazy val message = Json.format[Message]
   implicit lazy val complete = Json.format[Complete.type]

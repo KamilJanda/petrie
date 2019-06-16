@@ -1,7 +1,6 @@
 package agh.petrie.core.controllers
 
 import javax.inject.{Inject, Singleton}
-
 import agh.petrie.core.WebScraperProvider
 import agh.petrie.core.model.view.FetchLinksRequest
 import agh.petrie.core.model.view.FetchLinksRequest._
@@ -11,6 +10,7 @@ import agh.petrie.core.repositories.RequestHistoryRepository
 import agh.petrie.core.viewconverters.FetchedUrlsViewConverter
 import agh.petrie.scraping.actors.AsyncReceptionist.GetUrlsAsync
 import agh.petrie.scraping.api.BasicScrapingApi.Protocol
+import agh.petrie.scraping.model.Configuration
 import akka.actor.ActorSystem
 import akka.util.Timeout
 import play.api.db.slick.DatabaseConfigProvider
@@ -39,7 +39,11 @@ class FetchingLinksController @Inject()(
       fetchLinksRequest => {
         for {
           _ <- dbConfigProvider.get.db.run(requestHistoryRepository.save(fetchLinksRequest))
-          fetched <- webScraperProvider.get.getAllLinks(fetchLinksRequest.url, fetchLinksRequest.depth)
+          fetched <- webScraperProvider.get.getAllLinks(
+            fetchLinksRequest.url,
+            fetchLinksRequest.depth,
+            fetchLinksRequest.configuration
+          )
           fetchedView = fetchedUrlsViewConverter.toView(fetched)
         } yield  Ok(Json.toJson(fetchedView))
       }
