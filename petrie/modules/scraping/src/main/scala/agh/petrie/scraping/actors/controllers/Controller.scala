@@ -1,13 +1,15 @@
-package agh.petrie.scraping.actors
+package agh.petrie.scraping.actors.controllers
 
-import agh.petrie.scraping.actors.Controller.{CheckDone, CheckUrl, CheckUrlAsync}
+import agh.petrie.scraping.actors.controllers.Controller.{CheckDone, CheckUrl, CheckUrlAsync}
+import agh.petrie.scraping.actors.receptionist.Receptionist
 import agh.petrie.scraping.api.BasicScrapingApi.{Complete, Message}
 import agh.petrie.scraping.model.Configuration
-import agh.petrie.scraping.service.HtmlParsingService
-import agh.petrie.scraping.web.AsyncScrapingService
+import agh.petrie.scraping.service.GetterResolverService
 import akka.actor.{Actor, ActorRef, PoisonPill, Props}
 
-class Controller(asyncScrapingService: AsyncScrapingService, htmlParsingService: HtmlParsingService) extends Actor {
+class Controller(
+  getterResolverService: GetterResolverService
+) extends Actor {
 
   override def receive: Receive = {
     case message @ CheckUrl(_, depth, _) if depth >= 0 =>
@@ -24,7 +26,7 @@ class Controller(asyncScrapingService: AsyncScrapingService, htmlParsingService:
 
   def checkingUrls(children: Set[ActorRef], urls: Set[String], receptionist: ActorRef): Receive = {
     case CheckUrl(url, depth, configuration) if depth >= 0 =>
-      val worker = context.actorOf(Getter.props(url, depth, asyncScrapingService, htmlParsingService, configuration))
+      val worker = getterResolverService.getGetter(url, depth, configuration, context)
       context.become(checkingUrls(children + worker, urls + url, receptionist))
 
     case CheckUrl(url, _, _) =>
@@ -45,7 +47,7 @@ class Controller(asyncScrapingService: AsyncScrapingService, htmlParsingService:
     socketActor: ActorRef
   ): Receive = {
     case CheckUrl(url, depth, configuration) if depth >= 0 =>
-      val worker = context.actorOf(Getter.props(url, depth, asyncScrapingService, htmlParsingService, configuration))
+      val worker = getterResolverService.getGetter(url, depth, configuration, context)
       socketActor ! Message(url)
       context.become(checkingUrlsAsync(children + worker, urls + url, socketActor))
 
@@ -66,8 +68,8 @@ class Controller(asyncScrapingService: AsyncScrapingService, htmlParsingService:
 
 
 object Controller {
-  def props(asyncScrapingService: AsyncScrapingService, htmlParsingService: HtmlParsingService) =
-    Props(new Controller(asyncScrapingService, htmlParsingService))
+  def props(getterResolverService: GetterResolverService) =
+    Props(new Controller(getterResolverService))
 
   case class CheckUrl(url: String, depth: Int, configuration: Configuration)
   case class CheckUrlAsync(url: String, depth: Int, streamRef: ActorRef, configuration: Configuration)

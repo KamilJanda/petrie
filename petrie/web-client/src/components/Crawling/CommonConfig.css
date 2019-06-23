@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
 
-.url-config{
+.config{
     margin-top: 40px;
     background-color: #fff;
     border-radius: 10px;
@@ -10,10 +10,10 @@
     overflow: hidden;
     width: 1000px;
     max-width: 100%;
-    min-height: 200px;
+    min-height: 150px;
 }
 
-.url-config-content{
+.config-content{
     margin-left: 30px;
     margin-right: 30px;
 }
@@ -48,7 +48,7 @@ li.nostyle {
     transform: rotate(-45deg);
 }
 
-.url-config-title{
+.config-title{
     margin-top: 10px;
 }
 

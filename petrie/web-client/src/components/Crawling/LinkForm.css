@@ -123,6 +123,13 @@ input {
     height: 30%;
 }
 
+.configuration .buttons {
+    margin-top: 15px;
+}
+
+.configuration .buttons button {
+    margin-right: 10px;
+}
 
 
 .response {
@@ -141,5 +148,44 @@ input {
     min-height: 50px;
     max-height: 160px;
     overflow-y: scroll;
+}
 
+.radio-left {
+    width: 10%;
+    float:left;
+}
+
+.radio-right {
+    width: 10%;
+    float:right;
+}
+.container-radio-left {
+    width: 50%;
+    float: left;
+}
+
+.container-radio-right {
+    width: 50%;
+    float: right;
+}
+.custom-form{
+    display: block !important;
+    overflow:hidden;
+}
+
+.radio-text{
+    float:left;
+    margin-left: 15px;
+    margin-top: 5px;
+}
+
+.radio-text-right{
+    float:right;
+    margin-left: 15px;
+    margin-top: 5px;
+}
+
+.radio-form{
+    margin-bottom: 20px;
+    margin-top: 10px;
 }

@@ -1,12 +1,14 @@
-package agh.petrie.scraping.actors
+package agh.petrie.scraping.actors.receptionist
 
-import agh.petrie.scraping.actors.Receptionist.{FetchedUrls, GetUrls, Job}
+import agh.petrie.scraping.actors.controllers.Controller
+import agh.petrie.scraping.actors.receptionist.Receptionist.{FetchedUrls, GetUrls, Job}
 import agh.petrie.scraping.model.Configuration
-import agh.petrie.scraping.service.HtmlParsingService
-import agh.petrie.scraping.web.AsyncScrapingService
+import agh.petrie.scraping.service.GetterResolverService
 import akka.actor.{Actor, ActorRef, Props}
 
-class Receptionist(asyncScrapingService: AsyncScrapingService, htmlParsingService: HtmlParsingService) extends Actor {
+class Receptionist(
+  getterResolverService: GetterResolverService
+) extends Actor {
 
   override def receive: Receive = idle
 
@@ -17,7 +19,6 @@ class Receptionist(asyncScrapingService: AsyncScrapingService, htmlParsingServic
 
   def working(jobs: Vector[Job]): Receive = {
     case message: FetchedUrls =>
-      println(message)
       val job = jobs.head
       job.client !  message
       context.become(runNextJob(jobs.tail))
@@ -30,7 +31,7 @@ class Receptionist(asyncScrapingService: AsyncScrapingService, htmlParsingServic
       idle
     } else {
       val job = jobs.head
-      val controller = context.actorOf(Controller.props(asyncScrapingService, htmlParsingService))
+      val controller = context.actorOf(Controller.props(getterResolverService))
       controller ! job.action
       working(jobs)
     }
@@ -39,8 +40,8 @@ class Receptionist(asyncScrapingService: AsyncScrapingService, htmlParsingServic
 }
 
 object Receptionist {
-  def props(asyncScrapingService: AsyncScrapingService, htmlParsingService: HtmlParsingService) =
-    Props(new Receptionist(asyncScrapingService, htmlParsingService))
+  def props(getterResolverService: GetterResolverService) =
+    Props(new Receptionist(getterResolverService))
 
   case class GetUrls(rootUrl: String, depth: Int, configuration: Configuration)
   case class FetchedUrls(urls: Set[String])

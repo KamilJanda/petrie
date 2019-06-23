@@ -2,7 +2,7 @@ import React from "react";
 import './CommonConfig.css';
 
 
-class UrlConfig extends React.Component {
+class SelectorConfig extends React.Component {
     constructor(props) {
         super(props);
     }
@@ -13,9 +13,9 @@ class UrlConfig extends React.Component {
                 <div className="config">
                     <a href="#" data-id={this.props.key} onClick={this.props.close} className="close"/>
                     <div className="config-content">
-                        <h2 className="config-title">Url Config</h2>
+                        <h2 className="config-title">Selector Config</h2>
                         <div className="regex-input-container">
-                            <label>Enter url regex phrase</label>
+                            <label>Enter selector regex</label>
                             <input className="regex-input" value={this.props.regex} onChange={this.props.updateRegex}/></div>
                     </div>
                 </div>
@@ -24,4 +24,4 @@ class UrlConfig extends React.Component {
     }
 }
 
-export default UrlConfig;
+export default SelectorConfig;

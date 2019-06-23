@@ -1,8 +1,10 @@
 package agh.petrie.scraping.service
 
 import agh.petrie.scraping.model.Configuration
+import agh.petrie.scraping.service.HtmlParsingService.Html
 import org.jsoup.Jsoup
-import agh.petrie.scraping.web.AsyncScrapingService.Html
+import org.jsoup.nodes.Document
+import org.jsoup.select.Elements
 
 import scala.collection.JavaConverters._
 
@@ -10,13 +12,37 @@ class HtmlParsingService(urlRegexMatchingService: UrlRegexMatchingService) {
 
   def fetchUrls(html: Html, configuration: Configuration): Seq[String] = {
     val document = Jsoup.parse(html.body)
-    val urls = document.select("a[href]")
-    val absUrls = for {
-      url <- urls.iterator().asScala
-    } yield url.absUrl("href")
+    val absUrls = fetchUrls(document, configuration)
+    println(absUrls.size)
     absUrls
-      .toSeq
       .filter(_ != "")
-      .filter(urlRegexMatchingService.matchRegex(configuration.urlConfiguration.flatMap(_.regex.map(_.r))))
+      .filter(urlRegexMatchingService.matchRegex(configuration.urlConfiguration.map(_.regex.r)))
   }
+
+  def fetchUrls(document: Document, configuration: Configuration): Seq[String] = {
+    if (configuration.selectorConfiguration.isEmpty) {
+      elementsToUrl(document.select("a[href]"))
+    } else {
+      fetchBySelector(document, configuration)
+    }
+  }
+
+  def fetchBySelector(document: Document, configuration: Configuration): Seq[String] = {
+    for {
+      path <- configuration.selectorConfiguration.map(_.selector)
+      el = document.select(path)
+      elements = el.select("a[href]")
+      url <- elementsToUrl(elements)
+    } yield url
+  }
+
+  def elementsToUrl(elements: Elements): Seq[String] = {
+    (for {
+      url <- elements.iterator().asScala
+    } yield url.absUrl("href")).toSeq
+  }
+}
+
+object HtmlParsingService{
+  case class Html(body: String)
 }
