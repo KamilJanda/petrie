@@ -1,0 +1,90 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.side-menu {
+    background-color: #232939;
+    margin: 0;
+    padding: 20px 0;
+    width: 200px;
+    position: fixed;
+    height: 100%;
+    overflow: auto;
+    overflow-x: hidden; /* Disable horizontal scroll */
+    color: #606a8c;
+}
+
+.menu-header {
+    padding: 10px 20px;
+    font-weight: bold;
+    color: white;
+}
+
+.menu-list {
+    list-style: none;
+}
+
+.list-item {
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 400;
+    background-color: inherit;
+}
+
+.dropdown-container {
+    list-style: none;
+}
+
+.dropdown-container li {
+    padding: 5px 0;
+    margin-left: 5px;
+}
+
+.collapse-button {
+    border: none;
+    background-color: #232939;
+    color: #606a8c;
+    margin: 0;
+    padding: 0;
+    text-transform: none;
+    border-radius: unset;
+    font-size: unset;
+    font-weight: unset;
+    letter-spacing: unset;
+    transition: unset;
+}
+
+
+.side-menu a:link {
+    text-decoration: inherit;
+    font-weight: inherit;
+    color: inherit;
+}
+
+.side-menu a:visited {
+    text-decoration: inherit;
+    font-weight: inherit;
+    color: inherit;
+}
+
+.side-menu a:hover {
+    text-decoration: inherit;
+    font-weight: inherit;
+    color: inherit;
+}
+
+.side-menu a:active {
+    text-decoration: inherit;
+    font-weight: inherit;
+    color: inherit;
+}
+
+.current-location {
+    background-color: #1C2230;
+}
