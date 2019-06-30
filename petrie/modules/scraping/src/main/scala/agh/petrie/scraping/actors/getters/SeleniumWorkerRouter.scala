@@ -9,9 +9,9 @@ import akka.routing.{ActorRefRoutee, RoundRobinRoutingLogic, Router}
 class SeleniumWorkerRouter(webScraperConfiguration: WebScraperConfiguration) extends Actor {
 
     var router = {
-      val routees = (0 to webScraperConfiguration.seleniumDriversCount).map( _ => {
+      val routees = (0 until webScraperConfiguration.seleniumDriversCount).map( id => {
         val seleniumScrapingService = new SeleniumScrapingService
-        val routee = context.actorOf(SeleniumWorker.props(seleniumScrapingService))
+        val routee = context.actorOf(SeleniumWorker.props(seleniumScrapingService), s"selenium_worker$id")
         context.watch(routee)
         ActorRefRoutee(routee)
       })

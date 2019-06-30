@@ -22,10 +22,9 @@ class GetterResolverService(
     context:              ActorContext
   ) = {
     if (configuration.searchDynamically) {
-      context.actorOf(DynamicGetter.props(url, depth, configuration, seleniumWorkerRouter, htmlParsingService))
+      context.actorOf(DynamicGetter.props(url, depth, configuration, seleniumWorkerRouter, htmlParsingService, webScraperConfiguration.dynamicGetterTimeoutInSeconds))
     } else {
-      println("dynamic")
-      context.actorOf(AsyncGetter.props(url, depth, configuration,asyncScrapingService, htmlParsingService))
+      context.actorOf(AsyncGetter.props(url, depth, configuration,asyncScrapingService, htmlParsingService, webScraperConfiguration.asyncGetterTimeoutInSeconds))
     }
   }
 }

@@ -1,7 +1,7 @@
 package agh.petrie.scraping.actors.receptionist
 
 import agh.petrie.scraping.actors.controllers.Controller
-import agh.petrie.scraping.actors.controllers.Controller.CheckUrlAsync
+import agh.petrie.scraping.actors.controllers.Controller.CheckUrlStreaming
 import agh.petrie.scraping.actors.receptionist.StreamingReceptionist.GetUrlsAsync
 import agh.petrie.scraping.model.Configuration
 import agh.petrie.scraping.service.GetterResolverService
@@ -23,7 +23,7 @@ class StreamingReceptionist(
     configuration: Configuration
   ) = {
     val controller = context.actorOf(Controller.props(getterResolverService))
-    controller ! CheckUrlAsync(rootUrl, depth, socket, configuration)
+    controller ! CheckUrlStreaming(rootUrl, depth, socket, configuration)
   }
 }
 

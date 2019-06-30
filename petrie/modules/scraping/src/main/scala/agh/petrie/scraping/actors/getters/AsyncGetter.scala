@@ -17,13 +17,14 @@ class AsyncGetter(
   depth:                Int,
   configuration:        Configuration,
   asyncScrapingService: AsyncScrapingService,
-  htmlParsingService:   HtmlParsingService
+  htmlParsingService:   HtmlParsingService,
+  timeout:              Int
 ) extends Actor {
 
   implicit val exec = context.dispatcher
 
   asyncScrapingService.getUrlContent(url) pipeTo self
-  context.system.scheduler.scheduleOnce(2 second, self, Stop)
+  context.system.scheduler.scheduleOnce(timeout second, self, Stop)
 
   override def receive: Receive = {
     case html: Html =>
@@ -45,7 +46,8 @@ object AsyncGetter {
     configuration: Configuration,
     asyncScrapingService: AsyncScrapingService,
     htmlParsingService: HtmlParsingService,
-  ) = Props(new AsyncGetter(url, depth, configuration, asyncScrapingService, htmlParsingService))
+    timeout: Int
+  ) = Props(new AsyncGetter(url, depth, configuration, asyncScrapingService, htmlParsingService, timeout))
 
   case object Stop
 }
