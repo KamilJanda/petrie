@@ -1,5 +1,6 @@
 package agh.petrie.scraping.actors.getters
 
+import agh.petrie.scraping.actors.getters.DynamicGetter.WorkStarted
 import agh.petrie.scraping.actors.getters.SeleniumWorker.FetchFromUrl
 import agh.petrie.scraping.model.Configuration
 import agh.petrie.scraping.web.SeleniumScrapingService
@@ -12,6 +13,7 @@ class SeleniumWorker(seleniumScrapingService: SeleniumScrapingService) extends A
 
   override def receive: Receive = {
     case FetchFromUrl(url, configuration) =>
+      sender ! WorkStarted
       seleniumScrapingService.getUrlContent(url, configuration).pipeTo(sender())
   }
 }

@@ -5,6 +5,7 @@ import agh.petrie.scraping.service.HtmlParsingService.Html
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
+import us.codecraft.xsoup.Xsoup
 
 import scala.collection.JavaConverters._
 
@@ -13,7 +14,6 @@ class HtmlParsingService(urlRegexMatchingService: UrlRegexMatchingService) {
   def fetchUrls(html: Html, configuration: Configuration): Seq[String] = {
     val document = Jsoup.parse(html.body)
     val absUrls = fetchUrls(document, configuration)
-    println(absUrls.size)
     absUrls
       .filter(_ != "")
       .filter(urlRegexMatchingService.matchRegex(configuration.urlConfiguration.map(_.regex.r)))
@@ -30,7 +30,7 @@ class HtmlParsingService(urlRegexMatchingService: UrlRegexMatchingService) {
   def fetchBySelector(document: Document, configuration: Configuration): Seq[String] = {
     for {
       path <- configuration.selectorConfiguration.map(_.selector)
-      el = document.select(path)
+      el =  Xsoup.compile(path).evaluate(document).getElements
       elements = el.select("a[href]")
       url <- elementsToUrl(elements)
     } yield url

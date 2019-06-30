@@ -14,9 +14,15 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
 }
 
 @Singleton
-class WebScraperProvider @Inject() (actorSystem: ActorSystem) extends Provider[WebScraper] {
-  // TODO: create type safe configuration for webscraper config and  hardcoded values like that
-  lazy val get = WebScraper(actorSystem, WebScraperConfiguration(2))
+class WebScraperProvider @Inject() (actorSystem: ActorSystem, configuration: Configuration) extends Provider[WebScraper] {
+  lazy val get = WebScraper(
+    actorSystem,
+    WebScraperConfiguration(
+      configuration.underlying.getInt("webscraper.selenium.drivers.count"),
+      configuration.underlying.getInt("webscraper.getter.async.timeout"),
+      configuration.underlying.getInt("webscraper.getter.dynamic.timeout")
+    )
+  )
 }
 
 

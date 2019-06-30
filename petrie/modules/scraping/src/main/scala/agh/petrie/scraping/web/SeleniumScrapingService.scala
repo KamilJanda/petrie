@@ -16,9 +16,7 @@ class SeleniumScrapingService {
   def getUrlContent(url: String, configuration: Configuration)(implicit ec: ExecutionContext) = {
     Future{
       driver.get(url)
-      driver.wait(1000)
       Html(driver.getPageSource)
-
     }
   }
 }

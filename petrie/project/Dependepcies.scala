@@ -12,7 +12,8 @@ object Dependencies {
     "com.ning" % "async-http-client" % "1.7.19",
     "org.jsoup" % "jsoup" % "1.8.3",
     "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.1" % Test,
-    "io.scalaland" %% "chimney" % "0.3.1"
+    "io.scalaland" %% "chimney" % "0.3.1",
+    "us.codecraft" % "xsoup" % "0.3.1"
   )
 
   val time = Seq(
