@@ -40,11 +40,14 @@ const styles = theme => ({
     rightIcon: {
         marginLeft: theme.spacing(1),
     },
+    styleMargin: {
+        margin: theme.spacing(1),
+    }
 });
 
 const wsUri = "ws://localhost:9000/core/links/async";
 
-class AsyncCrawler extends Component {
+class StreamCrawler extends Component {
 
     constructor(props) {
         super(props);
@@ -129,7 +132,7 @@ class AsyncCrawler extends Component {
                     justify="center"
                     alignItems="center"
                 >
-                    <Grid item md={8}>
+                    <Grid item xs={12}>
                         <Card className={classes.card}>
                             <CardContent>
                                 <TextField
@@ -161,9 +164,9 @@ class AsyncCrawler extends Component {
                                         }}
                                     />
                                 </div>
-                                <h4>Connected: {this.state.isConnected.toString()}</h4>
+                                <h4 className={classes.styleMargin}>Connected: {this.state.isConnected.toString()}</h4>
                             </CardContent>
-                            <CardActions disableSpacing>
+                            <CardActions disableSpacing className={classes.styleMargin}>
 
                                 <Button
                                     variant="contained"
@@ -197,4 +200,4 @@ class AsyncCrawler extends Component {
     }
 }
 
-export default withStyles(styles)(AsyncCrawler)
+export default withStyles(styles)(StreamCrawler)
