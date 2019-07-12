@@ -30,6 +30,7 @@ const styles = theme => ({
     },
     appBar: {
         marginLeft: drawerWidth,
+        marginBottom: "50px",
         backgroundColor: "#fff",
         color: "#6c7293",
         [theme.breakpoints.up('sm')]: {
@@ -60,7 +61,9 @@ const styles = theme => ({
     nested: {
         paddingLeft: theme.spacing(4),
     },
-
+    mainGird: {
+        maxHeight: "100%",
+    }
 });
 
 
@@ -107,18 +110,18 @@ class Layout extends Component {
                             <MenuItem
                                 className={classes.nested}
                                 component={Link}
-                                to="/crawler/base"
-                                selected={pathname === "/crawler/base"}
+                                to="/crawler/simple"
+                                selected={pathname === "/crawler/simple"}
                             >
-                                Simple Crawling
+                                Simple
                             </MenuItem>
                             <MenuItem
                                 className={classes.nested}
                                 component={Link}
-                                to="/crawler/async"
-                                selected={pathname === "/crawler/async"}
+                                to="/crawler/stream"
+                                selected={pathname === "/crawler/stream"}
                             >
-                                Asynchronous Crawling
+                                Stream
                             </MenuItem>
                         </MenuList>
                     </Collapse>
@@ -176,7 +179,7 @@ class Layout extends Component {
                 </nav>
                 <main className={classes.content}>
                     <div className={classes.toolbar}/>
-                    <Grid container>
+                    <Grid container className={classes.mainGird}>
                         {this.props.children}
                     </Grid>
                 </main>
