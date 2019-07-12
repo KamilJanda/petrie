@@ -1,8 +1,7 @@
 package agh.petrie.core
 
 import javax.inject.{Inject, Provider, Singleton}
-
-import agh.petrie.scraping.WebScraper
+import agh.petrie.scraping.{WebScraper, WebScraperConfiguration}
 import akka.actor.ActorSystem
 import com.google.inject.AbstractModule
 import play.api.{Configuration, Environment}
@@ -15,8 +14,15 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
 }
 
 @Singleton
-class WebScraperProvider @Inject() (actorSystem: ActorSystem) extends Provider[WebScraper] {
-  lazy val get = WebScraper(actorSystem)
+class WebScraperProvider @Inject() (actorSystem: ActorSystem, configuration: Configuration) extends Provider[WebScraper] {
+  lazy val get = WebScraper(
+    actorSystem,
+    WebScraperConfiguration(
+      configuration.underlying.getInt("webscraper.selenium.drivers.count"),
+      configuration.underlying.getInt("webscraper.getter.async.timeout"),
+      configuration.underlying.getInt("webscraper.getter.dynamic.timeout")
+    )
+  )
 }
 
 

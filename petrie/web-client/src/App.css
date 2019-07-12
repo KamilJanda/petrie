@@ -7,6 +7,14 @@
     font-family: 'Montserrat', sans-serif;
 }
 
+html {
+    height: 100%;
+}
+
+body {
+    min-height: 100%;
+}
+
 main {
     background: #f6f5f7;
     display: flex;
@@ -14,8 +22,15 @@ main {
     align-items: center;
     flex-direction: column;
     font-family: 'Montserrat', sans-serif;
-    padding: 20px;
-    height: 100vh;
+    height: 100%;
+    margin-top: 70px;
+    padding: 20px 20px 70px 20px;
+}
+
+@media screen and (max-height: 500px) {
+    main {
+        margin-top: 70px;
+    }
 }
 
 a:hover {
