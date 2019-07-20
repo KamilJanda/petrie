@@ -20,11 +20,11 @@ sealed trait RequestHistoryQueries {
     } yield historyRow
   }
 
-  def saveRow(row: RequestHistoryRow) =  RequestHistories.query += row
+  def saveRow(row: RequestHistoryRow) = RequestHistories.query += row
 
 }
 
-sealed class RequestHistoryDao extends RequestHistoryQueries{
+sealed class RequestHistoryDao extends RequestHistoryQueries {
 
   def findById(id: Long)(implicit ec: ExecutionContext): DBIO[Option[RequestHistoryRow]] = {
     byId(id).result.map(_.headOption)
@@ -46,9 +46,11 @@ class RequestHistoryRepository {
   }
 
   def toEntity(fetchLinksRequest: FetchLinksRequest) = {
-    fetchLinksRequest.into[RequestHistoryRow]
+    fetchLinksRequest
+      .into[RequestHistoryRow]
       .withFieldConst(_.date, DateTime.now)
       .withFieldConst(_.id, None)
+      .withFieldComputed(_.depth, _.configuration.maxSearchDepth)
       .transform
   }
 }

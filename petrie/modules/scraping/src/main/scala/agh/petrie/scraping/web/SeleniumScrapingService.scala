@@ -14,7 +14,7 @@ class SeleniumScrapingService {
   private[scraping] lazy val driver: WebDriver = wire[ChromeDriver]
 
   def getUrlContent(url: String, configuration: Configuration)(implicit ec: ExecutionContext) = {
-    Future{
+    Future {
       driver.get(url)
       Html(driver.getPageSource)
     }

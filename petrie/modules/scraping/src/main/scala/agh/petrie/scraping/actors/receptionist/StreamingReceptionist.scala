@@ -1,36 +1,36 @@
 package agh.petrie.scraping.actors.receptionist
 
-import agh.petrie.scraping.actors.controllers.Controller
-import agh.petrie.scraping.actors.controllers.Controller.CheckUrlStreaming
-import agh.petrie.scraping.actors.receptionist.StreamingReceptionist.GetUrlsAsync
+import agh.petrie.scraping.actors.controllers.BaseController.StartScraping
+import agh.petrie.scraping.actors.controllers.StreamingController
+import agh.petrie.scraping.actors.receptionist.StreamingReceptionist.GetUrls
 import agh.petrie.scraping.model.Configuration
-import agh.petrie.scraping.service.GetterResolverService
+import agh.petrie.scraping.service.ScraperResolverService
 import akka.actor.{Actor, ActorRef, Props}
 
-class StreamingReceptionist(
-  getterResolverService:  GetterResolverService,
-  socket:                 ActorRef
+class  StreamingReceptionist(
+  scraperResolverService: ScraperResolverService,
+  socket: ActorRef
 ) extends Actor {
 
   override def receive: Receive = {
-    case GetUrlsAsync(url, depth, configuration) =>
-      stream(url, depth, configuration)
+    case GetUrls(url, configuration) =>
+      stream(url, configuration.maxSearchDepth, configuration)
   }
 
   private def stream(
-    rootUrl:   String,
-    depth:     Int,
+    rootUrl: String,
+    depth: Int,
     configuration: Configuration
   ) = {
-    val controller = context.actorOf(Controller.props(getterResolverService))
-    controller ! CheckUrlStreaming(rootUrl, depth, socket, configuration)
+    val controller = context.actorOf(StreamingController.props(scraperResolverService, configuration, socket))
+    controller ! StartScraping(rootUrl)
   }
 }
 
 object StreamingReceptionist {
-  def props(getterResolverService:  GetterResolverService)(socket: ActorRef) =
-    Props(new StreamingReceptionist(getterResolverService, socket))
 
-  case class GetUrlsAsync(rootUrl: String, depth: Int, configuration: Configuration)
+  def props(scraperResolverService: ScraperResolverService)(socket: ActorRef) =
+    Props(new StreamingReceptionist(scraperResolverService, socket))
+
+  case class GetUrls(rootUrl: String, configuration: Configuration)
 }
-

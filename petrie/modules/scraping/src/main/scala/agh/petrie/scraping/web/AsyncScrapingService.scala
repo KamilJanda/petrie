@@ -9,7 +9,7 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 
 class AsyncScrapingService(asyncHttpClient: AsyncHttpClient) {
 
-  def getUrlContent(url: String)(implicit  exec: Executor, ec: ExecutionContext): Future[Html] = {
+  def getUrlContent(url: String)(implicit exec: Executor, ec: ExecutionContext): Future[Html] = {
     val call = asyncHttpClient.prepareGet(url).execute()
     val promise = Promise[Html]
     call.addListener(getHtmlListener(promise, call), exec)
@@ -21,10 +21,9 @@ class AsyncScrapingService(asyncHttpClient: AsyncHttpClient) {
       override def run = {
         try {
           val response = call.get
-          if(response.getStatusCode < 400) {
+          if (response.getStatusCode < 400) {
             promise.success(Html(response.getResponseBody))
-          }
-          else {
+          } else {
             promise.failure(BadStatus(response.getStatusCode))
           }
         } catch {

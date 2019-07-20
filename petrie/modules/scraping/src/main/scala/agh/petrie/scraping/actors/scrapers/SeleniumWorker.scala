@@ -1,7 +1,7 @@
-package agh.petrie.scraping.actors.getters
+package agh.petrie.scraping.actors.scrapers
 
-import agh.petrie.scraping.actors.getters.DynamicGetter.WorkStarted
-import agh.petrie.scraping.actors.getters.SeleniumWorker.FetchFromUrl
+import agh.petrie.scraping.actors.scrapers.DynamicScrapper.WorkStarted
+import agh.petrie.scraping.actors.scrapers.SeleniumWorker.FetchFromUrl
 import agh.petrie.scraping.model.Configuration
 import agh.petrie.scraping.web.SeleniumScrapingService
 import akka.actor.{Actor, Props}
