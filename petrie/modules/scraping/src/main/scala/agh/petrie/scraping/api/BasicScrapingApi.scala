@@ -1,6 +1,6 @@
 package agh.petrie.scraping.api
 
-import agh.petrie.scraping.actors.receptionist.Receptionist.{FetchedUrls, GetUrls}
+import agh.petrie.scraping.actors.receptionist.SimpleReceptionist.{FetchedUrls, GetUrls}
 import agh.petrie.scraping.model.Configuration
 import akka.actor.{ActorRef, Props}
 import akka.pattern.ask
@@ -10,8 +10,8 @@ import scala.concurrent.Future
 
 trait BasicScrapingApi { self: TopLevelActorsDefined =>
 
-  def getAllLinks(rootUrl: String, depth: Int, configuration: Configuration)(implicit t: Timeout): Future[FetchedUrls] = {
-    (receptionist ? GetUrls(rootUrl, depth, configuration)).asInstanceOf[Future[FetchedUrls]]
+  def getAllLinks(rootUrl: String, configuration: Configuration)(implicit t: Timeout): Future[FetchedUrls] = {
+    (receptionist ? GetUrls(rootUrl, configuration)).asInstanceOf[Future[FetchedUrls]]
   }
 
   def fetchLinksAsync(

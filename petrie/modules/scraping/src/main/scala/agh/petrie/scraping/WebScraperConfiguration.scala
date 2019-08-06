@@ -1,7 +1,7 @@
 package agh.petrie.scraping
 
 case class WebScraperConfiguration(
-                                    seleniumDriversCount: Int,
-                                    asyncGetterTimeoutInSeconds: Int,
-                                    dynamicGetterTimeoutInSeconds: Int,
-                                  )
+  seleniumDriversCount: Int,
+  asyncScraperTimeoutInSeconds: Int,
+  dynamicScraperTimeoutInSeconds: Int
+)

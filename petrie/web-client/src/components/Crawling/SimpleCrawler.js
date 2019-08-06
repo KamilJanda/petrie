@@ -74,8 +74,6 @@ class SimpleCrawler extends React.Component {
 
     sendRequest = () => {
 
-        console.log(this.state.depth);
-
         fetch(requestUrl, {
             method: 'POST',
             headers: {
@@ -84,11 +82,23 @@ class SimpleCrawler extends React.Component {
             },
             body: JSON.stringify({
                 "url": this.state.requestUrl,
-                "depth": parseInt(this.state.depth),
                 "configuration": {
-                    "urlConfiguration": this.state.urlConfiguration ? this.state.urlConfiguration : [],
-                    "selectorConfiguration": this.state.selectorConfiguration ? this.state.selectorConfiguration : [],
-                    "searchDynamically": this.state.crawlDynamically
+                    "maxSearchDepth": parseInt(this.state.depth),
+                    "scrapAllIfNoScenario": true,
+                    "scrapDynamically": this.state.crawlDynamically,
+                    "scenarios": [{
+                        "name": "default",
+                        "preScrapingConfiguration": {
+                            "elementsToClick": []
+                        },
+                        "scrapingConfiguration": {
+                            "elementsToFetchUrlsFrom":  this.state.selectorConfiguration ? this.state.selectorConfiguration : []
+                        },
+                        "postScrapingConfiguration": {
+                            "urlConfiguration": this.state.urlConfiguration ? this.state.urlConfiguration : []
+                        },
+                        "isRootScenario": true
+                    }]
                 }
             })
 
