@@ -11,47 +11,7 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import Radio from "@material-ui/core/Radio";
 import FormLabel from "@material-ui/core/FormLabel";
-
-const styles = theme => ({
-    container: {
-        display: 'flex',
-        flexWrap: 'wrap',
-    },
-    textField: {
-        marginLeft: theme.spacing(1),
-        marginRight: theme.spacing(1),
-    },
-    dense: {
-        marginTop: theme.spacing(2),
-    },
-    menu: {
-        width: 200,
-    },
-    card: {
-        minWidth: 275,
-    },
-    button: {
-        margin: theme.spacing(1),
-    },
-    buttonGroup: {
-        margin: theme.spacing(1),
-    },
-    response: {
-        display: 'flex',
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "column",
-    },
-    rightIcon: {
-        marginLeft: theme.spacing(1),
-    },
-    mainGird: {
-        marginTop: "70px",
-    },
-    group: {
-        margin: theme.spacing(1),
-    },
-});
+import styles from "./Style/CrawlerStyle";
 
 const requestUrl = "http://localhost:9000/core/links";
 
@@ -140,7 +100,7 @@ class SimpleCrawler extends React.Component {
                     type="url"
                     configTitle="Url config"
                     close={this.deleteUrlConfig}
-                    updateRegex={updateRegex}/>
+                    update={updateRegex}/>
             ],
             urlConfigCounter: key + 1
         }));
@@ -162,7 +122,7 @@ class SimpleCrawler extends React.Component {
                     type="selector"
                     configTitle="Selector config"
                     close={this.deleteSelectorConfig}
-                    updateRegex={updateSelector}/>
+                    update={updateSelector}/>
             ],
             selectorConfigCounter: key + 1
         }));
@@ -318,6 +278,5 @@ class SimpleCrawler extends React.Component {
         );
     }
 }
-
 
 export default withStyles(styles)(SimpleCrawler);

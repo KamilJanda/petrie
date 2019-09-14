@@ -4,48 +4,20 @@ import TextField from "@material-ui/core/TextField";
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import Button from "@material-ui/core/Button";
-import CardActions from "@material-ui/core/CardActions";
 import Icon from "@material-ui/core/Icon";
 import DeleteIcon from '@material-ui/icons/Delete';
 import ButtonGroup from "@material-ui/core/ButtonGroup";
-
-
-const styles = theme => ({
-    container: {
-        display: 'flex',
-        flexWrap: 'wrap',
-    },
-    textField: {
-        marginLeft: theme.spacing(1),
-        marginRight: theme.spacing(1),
-    },
-    dense: {
-        marginTop: theme.spacing(2),
-    },
-    menu: {
-        width: 200,
-    },
-    card: {
-        minWidth: 275,
-    },
-    button: {
-        margin: theme.spacing(1),
-    },
-    response: {
-        display: 'flex',
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "column",
-    },
-    rightIcon: {
-        marginLeft: theme.spacing(1),
-    },
-    styleMargin: {
-        margin: theme.spacing(1),
-    }
-});
+import {buildRequestBody} from "./Utils/RequestBuilder";
+import FormLabel from "@material-ui/core/FormLabel";
+import RadioGroup from "@material-ui/core/RadioGroup";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Radio from "@material-ui/core/Radio";
+import styles from "./Style/CrawlerStyle";
+import ScrapingScenario from "./ScrapingScenario";
 
 const wsUri = "ws://localhost:9000/core/links/async";
+
+const {Map} = require('immutable');
 
 class StreamCrawler extends Component {
 
@@ -54,8 +26,13 @@ class StreamCrawler extends Component {
 
         this.state = {
             isConnected: false,
-            request: null,
-            response: []
+            requestUrl: "",
+            depth: 0,
+            response: [],
+            crawlDynamically: false,
+            scrapingScenariosView: [],
+            scenarios: new Map(),
+            scrapingScenariosCounter: 0,
         };
 
         this.socket = new WebSocket(wsUri);
@@ -86,7 +63,7 @@ class StreamCrawler extends Component {
             self.setState({
                 isConnected: false
             });
-            console.log("Connection closed");
+            console.log("Connection closed event code: " + event.code);
         });
     };
 
@@ -109,15 +86,72 @@ class StreamCrawler extends Component {
     };
 
     sendRequest = () => {
-        const request = this.state.request;
 
-        if (request !== null)
+        const request = JSON.stringify(
+            buildRequestBody({
+                url: this.state.requestUrl,
+                maxSearchDepth: this.state.depth,
+                scrapDynamically: this.state.crawlDynamically,
+                scenarios: this.state.scenarios.valueSeq().toArray()
+            })
+        );
+
+        if (request !== null) {
+            console.log("sending request: " + request);
             this.socket.send(request);
+        }
     };
 
-    handleChange = event => {
+    clearResponse = () => {
         this.setState({
-            request: event.target.value
+            response: []
+        });
+    };
+
+    handleUrlChange = event => {
+        this.setState({
+            requestUrl: event.target.value
+        })
+    };
+
+    handleDepthChange = event => {
+        this.setState({
+            depth: event.target.value
+        })
+    };
+
+    handleCrawlingTypeRadio = (e) => {
+        this.setState({
+            crawlDynamically: (e.currentTarget.value === "true")
+        })
+    };
+
+    handleScenarioChange = (scenarioId, value) => {
+        this.setState(prevState => ({scenarios: prevState.scenarios.set(scenarioId, value)}));
+    };
+
+    addScrapingScenario = () => {
+        const key = this.state.scrapingScenariosCounter;
+
+        this.setState(prevState => ({
+            scrapingScenariosView: [...prevState.scrapingScenariosView,
+                <ScrapingScenario
+                    key={key}
+                    id={key}
+                    close={this.deleteScrapingScenario}
+                    onChange={this.handleScenarioChange}
+                />
+            ],
+            scrapingScenariosCounter: key + 1
+        }));
+        this.handleScenarioChange(key, {})
+    };
+
+    deleteScrapingScenario = (itemId) => {
+        const update = this.state.scrapingScenariosView.filter(el => el.key != itemId);
+
+        this.setState({
+            scrapingScenariosView: update
         })
     };
 
@@ -136,37 +170,47 @@ class StreamCrawler extends Component {
                         <Card className={classes.card}>
                             <CardContent>
                                 <TextField
-                                    id="request"
-                                    label="Request message"
+                                    id="requestUrl"
+                                    label="Request url"
                                     fullWidth
-                                    defaultValue='{"rootUrl": "", "depth": 0}'
                                     className={classes.textField}
                                     margin="normal"
-                                    onChange={this.handleChange}
+                                    onChange={this.handleUrlChange}
                                     InputLabelProps={{
                                         shrink: true,
                                     }}
-
                                 />
-                                <div>
-                                    <TextField
-                                        id="response"
-                                        label="Response"
-                                        multiline
-                                        rows="6"
-                                        fullWidth
-                                        value={this.state.response}
-                                        className={classes.textField}
-                                        margin="normal"
-                                        variant="outlined"
-                                        InputProps={{
-                                            readOnly: true,
-                                        }}
-                                    />
-                                </div>
-                                <h4 className={classes.styleMargin}>Connected: {this.state.isConnected.toString()}</h4>
-                            </CardContent>
-                            <CardActions disableSpacing className={classes.styleMargin}>
+
+                                <TextField
+                                    id="depth"
+                                    label="Request depth"
+                                    className={classes.textField}
+                                    margin="normal"
+                                    type="number"
+                                    onChange={this.handleDepthChange}
+                                    InputLabelProps={{
+                                        shrink: true,
+                                    }}
+                                />
+
+                                <FormLabel
+                                    component="legend"
+                                    className={classes.group}
+                                >
+                                    Crawling Type
+                                </FormLabel>
+                                <RadioGroup
+                                    aria-label="Crawling Type"
+                                    name="Crawling Type"
+                                    className={classes.group}
+                                    value={this.state.crawlDynamically.toString()}
+                                    onChange={this.handleCrawlingTypeRadio}
+                                >
+                                    <FormControlLabel value="true" control={<Radio color="primary"/>}
+                                                      label="Dynamic"/>
+                                    <FormControlLabel value="false" control={<Radio color="primary"/>}
+                                                      label="Async"/>
+                                </RadioGroup>
 
                                 <Button
                                     variant="contained"
@@ -191,7 +235,50 @@ class StreamCrawler extends Component {
                                         <DeleteIcon className={classes.rightIcon}/>
                                     </Button>
                                 </ButtonGroup>
-                            </CardActions>
+                                <Button
+                                    variant="contained"
+                                    className={classes.button}
+                                    onClick={this.clearResponse}
+                                >
+                                    Clear response
+                                </Button>
+
+                                <div>
+                                    <TextField
+                                        id="response"
+                                        label="Response"
+                                        multiline
+                                        rows="6"
+                                        fullWidth
+                                        value={this.state.response}
+                                        className={classes.textField}
+                                        margin="normal"
+                                        variant="outlined"
+                                        InputProps={{
+                                            readOnly: true,
+                                        }}
+                                    />
+                                </div>
+
+                                <h4 className={classes.styleMargin}>Connected: {this.state.isConnected.toString()}</h4>
+
+
+                                <Button
+                                    variant="contained"
+                                    className={classes.button}
+                                    onClick={this.addScrapingScenario}
+                                >
+                                    Add scraping scenario
+                                </Button>
+
+                            </CardContent>
+                            <CardContent>
+                                <div>
+                                    <ol>
+                                        {this.state.scrapingScenariosView}
+                                    </ol>
+                                </div>
+                            </CardContent>
                         </Card>
                     </Grid>
                 </Grid>

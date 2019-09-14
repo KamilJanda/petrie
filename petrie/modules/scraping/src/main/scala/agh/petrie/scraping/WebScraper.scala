@@ -4,7 +4,10 @@ import agh.petrie.scraping.actors.receptionist.{SimpleReceptionist, StreamingRec
 import agh.petrie.scraping.api.{BasicScrapingApi, TopLevelActorsDefined}
 import akka.actor.{ActorRef, ActorSystem}
 
-case class WebScraper(actorSystem: ActorSystem, webScraperConfiguration: WebScraperConfiguration) extends ScrapingModule with BasicScrapingApi with TopLevelActorsDefined {
+case class WebScraper(actorSystem: ActorSystem, webScraperConfiguration: WebScraperConfiguration)
+    extends ScrapingModule
+      with BasicScrapingApi
+      with TopLevelActorsDefined {
 
   private[scraping] override val receptionist: ActorRef = actorSystem.actorOf(SimpleReceptionist.props(scraperResolverService))
 
