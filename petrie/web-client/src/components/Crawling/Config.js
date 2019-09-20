@@ -1,6 +1,7 @@
 import React from "react";
 import {makeStyles} from "@material-ui/core";
 import DeleteIcon from '@material-ui/icons/Delete';
+import TextField from "@material-ui/core/TextField";
 
 
 const useStyles = makeStyles(theme => ({
@@ -24,7 +25,7 @@ const useStyles = makeStyles(theme => ({
             boxShadow: "0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22)",
             position: "relative",
             overflow: "hidden",
-            width: "1000px",
+            width: "90%",
             maxWidth: "100%",
             minHeight: "150px",
         },
@@ -51,8 +52,17 @@ export default function Config(props) {
                 <div className={classes.configContent}>
                     <h2 className={classes.configTitle}>{props.configTitle}</h2>
                     <div className={classes.regexInputContainer}>
-                        <label>Enter {(props.type === "url") ? "url regex" : "xpath"} phrase</label>
-                        <input className="regex-input" value={props.regex} onChange={props.updateRegex}/>
+                        <TextField
+                            id="scenarioName"
+                            label={props.label}
+                            fullWidth
+                            className={classes.textField}
+                            margin="normal"
+                            onChange={props.update}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                        />
                     </div>
                 </div>
             </div>

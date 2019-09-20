@@ -10,6 +10,7 @@
     "react-dom": "^16.8.6",
     "react-router-dom": "^5.0.1",
     "react-scripts": "2.1.8",
+    "react-widgets": "^4.4.11",
     "recompose": "^0.30.0",
     "uikit-react": "^3.0.20"
   },

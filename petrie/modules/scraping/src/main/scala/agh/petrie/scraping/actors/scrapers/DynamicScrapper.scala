@@ -23,7 +23,7 @@ class DynamicScrapper(
 
   implicit val exec = context.dispatcher
 
-  workerRouter ! FetchFromUrl(url, configuration)
+  workerRouter ! FetchFromUrl(url, scrapingScenario.map(_.preScrapingConfiguration))
 
   override def receive: Receive = {
     case html: Html =>

@@ -35,7 +35,7 @@ class HtmlParsingService(urlRegexMatchingService: UrlRegexMatchingService) {
   def fetchBySelector(document: Document, scenario: ScrapingScenario): Seq[String] = {
     for {
       path <- scenario.scrapingConfiguration.elementsToFetchUrlsFrom.map(_.selector)
-      el = Xsoup.compile(path).evaluate(document).getElements
+      el = document.select(path)
       elements = el.select("a[href]")
       url <- elementsToUrl(elements)
     } yield url

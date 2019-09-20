@@ -9,11 +9,25 @@ import javax.inject.Singleton
 class ConfigurationViewConverter {
   def fromView(configurationView: ConfigurationView) = {
 
-    configurationView.into[Configuration]
+    val configuration = configurationView.into[Configuration]
       .withFieldComputed(_.noScenarioFallback, view => if(view.scrapAllIfNoScenario) ScrapAll else DontScrap)
       .withFieldComputed(_.scrapingType, view => if(view.scrapDynamically) DynamicScraping else AsyncScraping)
       .withFieldComputed(_.rootScenario, config => getScenarios(config))
       .transform
+
+    if(configuration.rootScenario.isEmpty) {
+      configuration.copy(rootScenario = List(new ScrapingScenario(
+        None,
+        "default",
+        PreScrapingConfiguration.empty,
+        ScrapingConfiguration.empty,
+        PostScrapingConfiguration.empty,
+        None
+      )))
+    }
+    else {
+      configuration
+    }
   }
 
   private def getScenarios(configurationView: ConfigurationView) = {
@@ -27,7 +41,7 @@ class ConfigurationViewConverter {
     scenarios.filter(scenario => configurationView.scenarios.find(_.name == scenario.name).map(_.isRootScenario).getOrElse(false))
   }
 
-  private def toScenarioWithoutTarget(scenarioView: ScrapingScenarioView) = {
+  private def toScenarioWithoutTarget(scenarioView: ScrapingScenarioView): ScrapingScenario = {
     new ScrapingScenario(
       scenarioView.id,
       scenarioView.name,
