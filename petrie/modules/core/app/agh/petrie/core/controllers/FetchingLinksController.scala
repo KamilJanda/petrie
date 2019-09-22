@@ -6,6 +6,7 @@ import agh.petrie.core.model.view.FetchLinksRequest._
 import agh.petrie.core.model.view.FetchedUrlsView._
 import agh.petrie.core.model.view.WebSocketFormat._
 import agh.petrie.core.repositories.RequestHistoryRepository
+import agh.petrie.core.services.ConfigurationValidationService
 import agh.petrie.core.viewconverters.WebsocketConverterActor.GetUrlsView
 import agh.petrie.core.viewconverters.{ConfigurationViewConverter, FetchedUrlsViewConverter, WebsocketConverterActor}
 import agh.petrie.scraping.actors.receptionist.StreamingReceptionist.GetUrls
@@ -29,24 +30,27 @@ class FetchingLinksController @Inject()(
   webScraperProvider: WebScraperProvider,
   fetchedUrlsViewConverter: FetchedUrlsViewConverter,
   configurationViewConverter: ConfigurationViewConverter,
+  configurationValidationService: ConfigurationValidationService
 )(implicit ec: ExecutionContext, materialize: akka.stream.Materializer, as: ActorSystem)
     extends AbstractController(cc) {
 
   def fetchLinks = Action.async(parse.json) { implicit request =>
-    implicit val timeout = Timeout(240 seconds)
+    implicit val timeout = Timeout(480 seconds)
     request.body
       .validate[FetchLinksRequest]
       .fold(
         errors => Future { BadRequest(Json.obj("status" -> "KO", "message" -> JsError.toJson(errors))) },
         fetchLinksRequest => {
-          for {
-            _ <- dbConfigProvider.get.db.run(requestHistoryRepository.save(fetchLinksRequest))
-            fetched <- webScraperProvider.get.getAllLinks(
-              fetchLinksRequest.url,
-              configurationViewConverter.fromView(fetchLinksRequest.configuration)
-            )
-            fetchedView = fetchedUrlsViewConverter.toView(fetched)
-          } yield Ok(Json.toJson(fetchedView))
+          configurationValidationService.validate(fetchLinksRequest.configuration) match {
+            case Left(message) => Future { BadRequest(Json.toJson(message)) }
+            case _ =>
+              for {
+                _ <- dbConfigProvider.get.db.run(requestHistoryRepository.save(fetchLinksRequest))
+                configuration =  configurationViewConverter.fromView(fetchLinksRequest.configuration)
+                fetched <- webScraperProvider.get.getAllLinks(fetchLinksRequest.url, configuration)
+                fetchedView = fetchedUrlsViewConverter.toView(fetched)
+              } yield Ok(Json.toJson(fetchedView))
+          }
         }
       )
   }

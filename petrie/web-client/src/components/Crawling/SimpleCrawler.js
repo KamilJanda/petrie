@@ -22,13 +22,11 @@ class SimpleCrawler extends React.Component {
             response: [],
             requestUrl: "",
             depth: 0,
-            urlConfigView: [],
-            urlConfiguration: [],
-            urlConfigCounter: 0,
-            selectorConfigView: [],
-            selectorConfiguration: [],
-            selectorConfigCounter: 0,
-            crawlDynamically: false
+            scenarios: [],
+            scenariosViews: [],
+            scenarioCounter: 0,
+            crawlDynamically: false,
+            scrapAllIfNoScenario: true
         }
     }
 
@@ -44,21 +42,9 @@ class SimpleCrawler extends React.Component {
                 "url": this.state.requestUrl,
                 "configuration": {
                     "maxSearchDepth": parseInt(this.state.depth),
-                    "scrapAllIfNoScenario": true,
+                    "scrapAllIfNoScenario": this.state.scrapAllIfNoScenario,
                     "scrapDynamically": this.state.crawlDynamically,
-                    "scenarios": [{
-                        "name": "default",
-                        "preScrapingConfiguration": {
-                            "elementsToClick": []
-                        },
-                        "scrapingConfiguration": {
-                            "elementsToFetchUrlsFrom":  this.state.selectorConfiguration ? this.state.selectorConfiguration : []
-                        },
-                        "postScrapingConfiguration": {
-                            "urlConfiguration": this.state.urlConfiguration ? this.state.urlConfiguration : []
-                        },
-                        "isRootScenario": true
-                    }]
+                    "scenarios": this.state.scenarios
                 }
             })
 
@@ -84,69 +70,58 @@ class SimpleCrawler extends React.Component {
         })
     };
 
-    addUrlConfig = () => {
-        const key = this.state.urlConfigCounter;
-        const config = {};
-        const updateRegex = (event) => {
-            config.regex = event.target.value
+    getScenariosNames = () => {
+        return this.state.scenarios
+            .map(scenario => scenario.name)
+            .filter(name => name != "")
+    }
+
+
+    addScenario = () => {
+        const key = this.state.scenarioCounter;
+        const scenario = {};
+        const updateScenario = (newScenario) => {
+            for (var prop in newScenario) {
+                if (newScenario.hasOwnProperty(prop)) {
+                    scenario[prop] = newScenario[prop];
+                }
+            }
         };
 
         this.setState(prevState => ({
-            urlConfiguration: [...prevState.urlConfiguration, config],
-            urlConfigView: [...prevState.urlConfigView,
-                <Config
+            scenarios: [...prevState.scenarios, scenario],
+            scenariosViews: [...prevState.scenariosViews,
+                <Scenario
                     key={key}
                     id={key}
-                    type="url"
-                    configTitle="Url config"
-                    close={this.deleteUrlConfig}
-                    update={updateRegex}/>
+                    close={this.deleteScenario}
+                    isDynamicCrawling={this.state.crawlDynamically}
+                    updateScenario={updateScenario}
+                    getScenariosNames = {this.getScenariosNames}/>
             ],
-            urlConfigCounter: key + 1
+            scenarioCounter: key + 1
         }));
     };
 
-    addSelectorConfig = () => {
-        const key = this.state.selectorConfigCounter;
-        const config = {};
-        const updateSelector = (event) => {
-            config.selector = event.target.value
-        };
-
-        this.setState(prevState => ({
-            selectorConfiguration: [...prevState.urlConfiguration, config],
-            selectorConfigView: [...prevState.selectorConfigView,
-                <Config
-                    key={key}
-                    id={key}
-                    type="selector"
-                    configTitle="Selector config"
-                    close={this.deleteSelectorConfig}
-                    update={updateSelector}/>
-            ],
-            selectorConfigCounter: key + 1
-        }));
-    };
-
-    deleteUrlConfig = (itemId) => {
-        const updatedUrlConfigView = this.state.urlConfigView.filter(el => el.key != itemId);
+    deleteScenario = (scenarioOrdinal) => {
+        const updatedScenariosViews = this.state.scenariosViews.filter(el => el.key != scenarioOrdinal);
+        const updatedScenarios = this.state.scenarios.filter(el => el.key != scenarioOrdinal);
 
         this.setState({
-            urlConfigView: updatedUrlConfigView
-        })
-    };
-
-    deleteSelectorConfig = (itemId) => {
-        const updatedSelectorConfigView = this.state.selectorConfigView.filter(el => el.key != itemId);
-
-        this.setState({
-            selectorConfigView: updatedSelectorConfigView
+            scenariosViews: updatedScenariosViews,
+            scenarios: updatedScenarios,
         })
     };
 
     handleCrawlingTypeRadio = (e) => {
         this.setState({
             crawlDynamically: (e.currentTarget.value === "true")
+        })
+    };
+
+    handleCrawlingWhenNoScenarioRadio = (e) => {
+        this.setState({
+            scrapAllIfNoScenario : (e.currentTarget.value === "true")
         })
     };
 
@@ -187,7 +162,7 @@ class SimpleCrawler extends React.Component {
 
                                 <TextField
                                     id="depth"
-                                    label="Request depth"
+                                    label="Max request depth"
                                     className={classes.textField}
                                     margin="normal"
                                     type="number"
@@ -215,6 +190,24 @@ class SimpleCrawler extends React.Component {
                                                       label="Dynamic"/>
                                     <FormControlLabel value="false" control={<Radio color="primary"/>}
                                                       label="Async"/>
+                                </RadioGroup>
+                                <FormLabel
+                                    component="legend"
+                                    className={classes.group}
+                                >
+                                    Scraping strategy without scenario
+                                </FormLabel>
+                                <RadioGroup
+                                    aria-label="Scraping strategy without scenario"
+                                    name="Scraping strategy without scenario"
+                                    className={classes.group}
+                                    value={this.state.scrapAllIfNoScenario.toString()}
+                                    onChange={this.handleCrawlingWhenNoScenarioRadio}
+                                >
+                                    <FormControlLabel value="true" control={<Radio color="primary"/>}
+                                                      label="Scrap all"/>
+                                    <FormControlLabel value="false" control={<Radio color="primary"/>}
+                                                      label="Scrap none"/>
                                 </RadioGroup>
 
                                 <Button
@@ -246,17 +239,10 @@ class SimpleCrawler extends React.Component {
 
                                 <ButtonGroup
                                     variant="contained"
-                                    className={classes.buttonGroup}
-                                >
+                                    className={classes.buttonGroup}>
                                     <Button
-                                        onClick={this.addUrlConfig}
-                                    >
-                                        Add Url Config
-                                    </Button>
-                                    <Button
-                                        onClick={this.addSelectorConfig}
-                                    >
-                                        Add Selector Config
+                                        onClick={this.addScenario}>
+                                        Add Scenario
                                     </Button>
                                 </ButtonGroup>
                             </CardContent>
@@ -264,10 +250,7 @@ class SimpleCrawler extends React.Component {
                             <CardContent>
                                 <div>
                                     <ol>
-                                        {this.state.urlConfigView}
-                                    </ol>
-                                    <ol>
-                                        {this.state.selectorConfigView}
+                                        {this.state.scenariosViews}
                                     </ol>
                                 </div>
                             </CardContent>

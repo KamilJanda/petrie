@@ -51,11 +51,10 @@ export default function Config(props) {
                     <h2 className={classes.configTitle}>{props.configTitle}</h2>
                     <div className={classes.regexInputContainer}>
                         <TextField
-                            id="regex-input"
-                            label={"Enter " + ((props.type === "url") ? "url regex" : "xpath") + " phrase"}
+                            id="scenarioName"
+                            label={props.label}
                             fullWidth
                             margin="normal"
-                            value={props.regex}
                             onChange={(event) => props.update(props.id, event.target.value)}
                             InputLabelProps={{
                                 shrink: true,
@@ -66,4 +65,5 @@ export default function Config(props) {
             </div>
         </li>
     );
+
 }

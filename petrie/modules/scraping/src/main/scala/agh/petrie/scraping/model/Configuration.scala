@@ -22,13 +22,25 @@ final case class PreScrapingConfiguration(
   elementsToClick: List[SelectorConfiguration]
 )
 
+object PreScrapingConfiguration{
+  def empty() = PreScrapingConfiguration(List())
+}
+
 final case class ScrapingConfiguration(
   elementsToFetchUrlsFrom: List[SelectorConfiguration]
 )
 
+object ScrapingConfiguration{
+  def empty() = ScrapingConfiguration(List())
+}
+
 final case class PostScrapingConfiguration(
   urlConfiguration: List[UrlConfiguration]
 )
+
+object PostScrapingConfiguration{
+  def empty() = PostScrapingConfiguration(List())
+}
 
 final case class UrlConfiguration(
   regex: String
