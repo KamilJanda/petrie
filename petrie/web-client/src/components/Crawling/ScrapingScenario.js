@@ -8,6 +8,10 @@ import CardContent from "@material-ui/core/CardContent";
 import Config from "./Config";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Checkbox from "@material-ui/core/Checkbox";
+import {Combobox} from "react-widgets";
+import Box from "@material-ui/core/Box";
+import 'react-widgets/dist/css/react-widgets.css';
+import {scenarioBuilder} from "./Utils/RequestBuilder";
 
 const {Map} = require('immutable');
 
@@ -58,6 +62,21 @@ const styles = theme => ({
     checkbox: {
         margin: theme.spacing(1),
         marginTop: theme.spacing(3),
+    },
+    combobox: {
+        margin: theme.spacing(1),
+        marginTop: theme.spacing(3),
+    },
+    notVisible: {
+        display: "none"
+    },
+    configPartTitle: {
+        margin: theme.spacing(1),
+        marginTop: theme.spacing(4),
+        marginLeft: theme.spacing(1),
+    },
+    configList: {
+        padding: theme.spacing(2),
     }
 });
 
@@ -78,6 +97,7 @@ class ScrapingScenario extends Component {
             selectorConfiguration: new Map(),
             selectorConfigCounter: 0,
             isRootScenario: true,
+            isDynamicCrawling: props.isDynamicCrawling,
         }
     }
 
@@ -93,27 +113,13 @@ class ScrapingScenario extends Component {
         this.props.onChange(this.props.id, this.buildScenario({isRootScenario: newIsRootScenario}))
     };
 
-    buildScenario = ({
-                         name = this.state.name,
-                         elementsToClick = this.state.elementsToClick,
-                         selectorConfiguration = this.state.selectorConfiguration,
-                         urlConfiguration = this.state.urlConfiguration,
-                         isRootScenario = this.state.isRootScenario
-                     } = {}) => {
-        return {
-            "name": name,
-            "preScrapingConfiguration": {
-                "elementsToClick": elementsToClick.valueSeq().toArray()
-            },
-            "scrapingConfiguration": {
-                "elementsToFetchUrlsFrom": selectorConfiguration.valueSeq().toArray()
-            },
-            "postScrapingConfiguration": {
-                "urlConfiguration": urlConfiguration.valueSeq().toArray()
-            },
-            "isRootScenario": isRootScenario
-        }
-    };
+    buildScenario = () => scenarioBuilder({
+        name: this.state.name,
+        elementsToClick: this.state.elementsToClick.valueSeq().toArray(),
+        selectorConfiguration: this.state.selectorConfiguration.valueSeq().toArray(),
+        urlConfiguration: this.state.urlConfiguration.valueSeq().toArray(),
+        isRootScenario: this.state.isRootScenario
+    });
 
     addUrlConfig = () => {
         const key = this.state.urlConfigCounter;
@@ -232,6 +238,19 @@ class ScrapingScenario extends Component {
         this.props.onChange(this.props.id, this.buildScenario({elementsToClick: updatedElementsToClick}))
     };
 
+    getScenariosNames = () => {
+        return this.props.getScenariosNames();
+    };
+
+    titleIfNonEmpty(title, array) {
+        const {classes} = this.props;
+        if (array.length > 0) {
+            return (<div className={classes.configPartTitle}><h2>{title}</h2></div>)
+        } else {
+            return (<div></div>)
+        }
+    }
+
     render() {
         const {classes} = this.props;
 
@@ -265,38 +284,53 @@ class ScrapingScenario extends Component {
                             label="is Root Scenario"
                         />
 
+                        <Box className={classes.combobox}>
+                            <label>Target Scenario </label>
+                            <Combobox
+                                onChange={this.onTargetChange}
+                                data={this.getScenariosNames()}
+                                onToggle={() => {
+                                    this.forceUpdate();
+                                }}
+                            />
+                        </Box>
+
                         <ButtonGroup
                             variant="contained"
                             className={classes.buttonGroup}
                         >
                             <Button
-                                onClick={this.addUrlConfig}
+                                className={this.props.isDynamicCrawling ? '' : classes.notVisible}
+                                onClick={this.addElementToClick}
                             >
-                                Add Url Config
+                                Add PreScraping Config
                             </Button>
                             <Button
                                 onClick={this.addSelectorConfig}
                             >
-                                Add Selector Config
+                                Add Scraping Config
                             </Button>
                             <Button
-                                onClick={this.addElementToClick}
+                                onClick={this.addUrlConfig}
                             >
-                                Add element to click
+                                Add PostScraping Config
                             </Button>
                         </ButtonGroup>
 
                     </CardContent>
 
-                    <div>
-                        <ol>
-                            {this.state.urlConfigView}
+                    <div className={classes.configList}>
+                        <ol className={(this.props.isDynamicCrawling ? '' : classes.notVisible)}>
+                            {this.titleIfNonEmpty("PreScraping Configuration: ", this.state.elementsToClickView)}
+                            {this.state.elementsToClickView}
                         </ol>
                         <ol>
+                            {this.titleIfNonEmpty("Scraping Configuration: ", this.state.selectorConfigView)}
                             {this.state.selectorConfigView}
                         </ol>
                         <ol>
-                            {this.state.elementsToClickView}
+                            {this.titleIfNonEmpty("PostScraping Configuration: ", this.state.urlConfigView)}
+                            {this.state.urlConfigView}
                         </ol>
                     </div>
 

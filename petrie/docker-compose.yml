@@ -4,6 +4,6 @@ services:
     image: "postgres:11"
     container_name: "petrie_db"
     ports:
-      - "54320:5432"
+      - "5432:5432"
     volumes:
       - ./conf/evolutions/default/schema.sql:/docker-entrypoint-initdb.d/init.sql

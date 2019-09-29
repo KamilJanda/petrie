@@ -7,7 +7,7 @@ import Button from "@material-ui/core/Button";
 import Icon from "@material-ui/core/Icon";
 import DeleteIcon from '@material-ui/icons/Delete';
 import ButtonGroup from "@material-ui/core/ButtonGroup";
-import {buildRequestBody} from "./Utils/RequestBuilder";
+import {buildRequestBody, scenarioBuilder} from "./Utils/RequestBuilder";
 import FormLabel from "@material-ui/core/FormLabel";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
@@ -26,10 +26,11 @@ class StreamCrawler extends Component {
 
         this.state = {
             isConnected: false,
+            response: [],
             requestUrl: "",
             depth: 0,
-            response: [],
             crawlDynamically: false,
+            scrapAllIfNoScenario: true,
             scrapingScenariosView: [],
             scenarios: new Map(),
             scrapingScenariosCounter: 0,
@@ -92,6 +93,7 @@ class StreamCrawler extends Component {
                 url: this.state.requestUrl,
                 maxSearchDepth: this.state.depth,
                 scrapDynamically: this.state.crawlDynamically,
+                scrapAllIfNoScenario: this.state.scrapAllIfNoScenario,
                 scenarios: this.state.scenarios.valueSeq().toArray()
             })
         );
@@ -126,6 +128,12 @@ class StreamCrawler extends Component {
         })
     };
 
+    handleCrawlingWhenNoScenarioRadio = (e) => {
+        this.setState({
+            scrapAllIfNoScenario: (e.currentTarget.value === "true")
+        })
+    };
+
     handleScenarioChange = (scenarioId, value) => {
         this.setState(prevState => ({scenarios: prevState.scenarios.set(scenarioId, value)}));
     };
@@ -140,11 +148,13 @@ class StreamCrawler extends Component {
                     id={key}
                     close={this.deleteScrapingScenario}
                     onChange={this.handleScenarioChange}
+                    getScenariosNames={this.getScenariosNames}
+                    isDynamicCrawling={this.state.crawlDynamically}
                 />
             ],
             scrapingScenariosCounter: key + 1
         }));
-        this.handleScenarioChange(key, {})
+        this.handleScenarioChange(key, scenarioBuilder())
     };
 
     deleteScrapingScenario = (itemId) => {
@@ -153,6 +163,10 @@ class StreamCrawler extends Component {
         this.setState({
             scrapingScenariosView: update
         })
+    };
+
+    getScenariosNames = () => {
+        return this.state.scenarios.valueSeq().map(scenario => scenario.name);
     };
 
     render() {
@@ -183,7 +197,7 @@ class StreamCrawler extends Component {
 
                                 <TextField
                                     id="depth"
-                                    label="Request depth"
+                                    label="Max request depth"
                                     className={classes.textField}
                                     margin="normal"
                                     type="number"
@@ -210,6 +224,25 @@ class StreamCrawler extends Component {
                                                       label="Dynamic"/>
                                     <FormControlLabel value="false" control={<Radio color="primary"/>}
                                                       label="Async"/>
+                                </RadioGroup>
+
+                                <FormLabel
+                                    component="legend"
+                                    className={classes.group}
+                                >
+                                    Scraping strategy without scenario
+                                </FormLabel>
+                                <RadioGroup
+                                    aria-label="Scraping strategy without scenario"
+                                    name="Scraping strategy without scenario"
+                                    className={classes.group}
+                                    value={this.state.scrapAllIfNoScenario.toString()}
+                                    onChange={this.handleCrawlingWhenNoScenarioRadio}
+                                >
+                                    <FormControlLabel value="true" control={<Radio color="primary"/>}
+                                                      label="Scrap all"/>
+                                    <FormControlLabel value="false" control={<Radio color="primary"/>}
+                                                      label="Scrap none"/>
                                 </RadioGroup>
 
                                 <Button

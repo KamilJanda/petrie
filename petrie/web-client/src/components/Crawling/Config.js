@@ -27,6 +27,7 @@ const useStyles = makeStyles(theme => ({
         width: "100%",
         maxWidth: "100%",
         minHeight: "150px",
+        boxShadow: "0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22)",
     },
     configContent: {
         marginLeft: "30px",

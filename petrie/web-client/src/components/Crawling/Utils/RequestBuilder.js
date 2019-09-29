@@ -3,7 +3,7 @@ export function buildRequestBody(
         url,
         maxSearchDepth,
         scrapDynamically,
-        scrapAllIfNoScenario = true,
+        scrapAllIfNoScenario,
         scenarios = []
 
     }
@@ -21,12 +21,12 @@ export function buildRequestBody(
 
 export function scenarioBuilder(
     {
-        name,
+        name = "",
         elementsToClick = [],
         elementsToFetchUrlsFrom = [],
         urlConfiguration = [],
         isRootScenario = true
-    }
+    } = {}
 ) {
     return {
         "name": name,
