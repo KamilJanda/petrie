@@ -1,13 +1,8 @@
 # Petrie
 
-## database setup
+## Getting Started
 
-install postgres on your local machine.
+### Prerequisites
 
-than create database and user with this commands: 
-
-```sql
-CREATE ROLE xxxx WITH LOGIN PASSWORD 'pass123';
-CREATE DATABASE petrie;
-GRANT ALL PRIVILEGES ON DATABASE petrie TO xxxx;
-```
+You must have [Docker](https://docs.docker.com/engine/installation/) and 
+[Docker-Compose](https://docs.docker.com/compose/install/) installed.

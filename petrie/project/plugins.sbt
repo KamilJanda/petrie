@@ -17,3 +17,6 @@ addSbtPlugin("com.github.tototoshi" % "sbt-slick-codegen" % "1.3.0")
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.7.0")
 
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.0.0")
+
+addSbtPlugin("se.marcuslonnberg" % "sbt-docker" % "1.4.1")
+addSbtPlugin("com.tapad" % "sbt-docker-compose" % "1.0.34")

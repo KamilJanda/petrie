@@ -5,56 +5,18 @@ import CardContent from "@material-ui/core/CardContent";
 import TextField from "@material-ui/core/TextField";
 import Icon from "@material-ui/core/Icon";
 import Button from "@material-ui/core/Button";
-import Config from "./Config";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import Radio from "@material-ui/core/Radio";
 import FormLabel from "@material-ui/core/FormLabel";
-import Scenario from "./Scenario";
-
-const styles = theme => ({
-    container: {
-        display: 'flex',
-        flexWrap: 'wrap',
-    },
-    textField: {
-        marginLeft: theme.spacing(1),
-        marginRight: theme.spacing(1),
-    },
-    dense: {
-        marginTop: theme.spacing(2),
-    },
-    menu: {
-        width: 200,
-    },
-    card: {
-        minWidth: 275,
-    },
-    button: {
-        margin: theme.spacing(1),
-    },
-    buttonGroup: {
-        margin: theme.spacing(1),
-    },
-    response: {
-        display: 'flex',
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "column",
-    },
-    rightIcon: {
-        marginLeft: theme.spacing(1),
-    },
-    mainGird: {
-        marginTop: "70px",
-    },
-    group: {
-        margin: theme.spacing(1),
-    },
-});
+import styles from "./Style/CrawlerStyle";
+import {buildRequestBody, scenarioBuilder} from "./Utils/RequestBuilder";
+import ScrapingScenario from "./ScrapingScenario";
 
 const requestUrl = "http://localhost:9000/core/links";
+
+const {Map} = require('immutable');
 
 class SimpleCrawler extends React.Component {
     constructor(props) {
@@ -63,11 +25,11 @@ class SimpleCrawler extends React.Component {
             response: [],
             requestUrl: "",
             depth: 0,
-            scenarios: [],
-            scenariosViews: [],
-            scenarioCounter: 0,
             crawlDynamically: false,
-            scrapAllIfNoScenario: true
+            scrapAllIfNoScenario: true,
+            scrapingScenariosView: [],
+            scenarios: new Map(),
+            scrapingScenariosCounter: 0,
         }
     }
 
@@ -79,15 +41,15 @@ class SimpleCrawler extends React.Component {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                "url": this.state.requestUrl,
-                "configuration": {
-                    "maxSearchDepth": parseInt(this.state.depth),
-                    "scrapAllIfNoScenario": this.state.scrapAllIfNoScenario,
-                    "scrapDynamically": this.state.crawlDynamically,
-                    "scenarios": this.state.scenarios
-                }
-            })
+            body: JSON.stringify(
+                buildRequestBody({
+                    url: this.state.requestUrl,
+                    maxSearchDepth: this.state.depth,
+                    scrapDynamically: this.state.crawlDynamically,
+                    scrapAllIfNoScenario: this.state.scrapAllIfNoScenario,
+                    scenarios: this.state.scenarios.valueSeq().toArray()
+                })
+            )
 
         }).then(res => res.json())
             .then(response =>
@@ -111,47 +73,39 @@ class SimpleCrawler extends React.Component {
         })
     };
 
-    getScenariosNames = () => {
-        return this.state.scenarios
-            .map(scenario => scenario.name)
-            .filter(name => name != "")
-    }
-
-
-    addScenario = () => {
-        const key = this.state.scenarioCounter;
-        const scenario = {};
-        const updateScenario = (newScenario) => {
-            for (var prop in newScenario) {
-                if (newScenario.hasOwnProperty(prop)) {
-                    scenario[prop] = newScenario[prop];
-                }
-            }
-        };
-
-        this.setState(prevState => ({
-            scenarios: [...prevState.scenarios, scenario],
-            scenariosViews: [...prevState.scenariosViews,
-                <Scenario
-                    key={key}
-                    id={key}
-                    close={this.deleteScenario}
-                    isDynamicCrawling={this.state.crawlDynamically}
-                    updateScenario={updateScenario}
-                    getScenariosNames = {this.getScenariosNames}/>
-            ],
-            scenarioCounter: key + 1
-        }));
+    handleScenarioChange = (scenarioId, value) => {
+        this.setState(prevState => ({scenarios: prevState.scenarios.set(scenarioId, value)}));
     };
 
-    deleteScenario = (scenarioOrdinal) => {
-        const updatedScenariosViews = this.state.scenariosViews.filter(el => el.key != scenarioOrdinal);
-        const updatedScenarios = this.state.scenarios.filter(el => el.key != scenarioOrdinal);
+    addScrapingScenario = () => {
+        const key = this.state.scrapingScenariosCounter;
+
+        this.setState(prevState => ({
+            scrapingScenariosView: [...prevState.scrapingScenariosView,
+                <ScrapingScenario
+                    key={key}
+                    id={key}
+                    close={this.deleteScrapingScenario}
+                    onChange={this.handleScenarioChange}
+                    getScenariosNames={this.getScenariosNames}
+                    isDynamicCrawling={this.state.crawlDynamically}
+                />
+            ],
+            scrapingScenariosCounter: key + 1
+        }));
+        this.handleScenarioChange(key, scenarioBuilder())
+    };
+
+    deleteScrapingScenario = (itemId) => {
+        const update = this.state.scrapingScenariosView.filter(el => el.key != itemId);
 
         this.setState({
-            scenariosViews: updatedScenariosViews,
-            scenarios: updatedScenarios,
+            scrapingScenariosView: update
         })
+    };
+
+    getScenariosNames = () => {
+        return this.state.scenarios.valueSeq().map(scenario => scenario.name);
     };
 
     handleCrawlingTypeRadio = (e) => {
@@ -282,7 +236,7 @@ class SimpleCrawler extends React.Component {
                                     variant="contained"
                                     className={classes.buttonGroup}>
                                     <Button
-                                        onClick={this.addScenario}>
+                                        onClick={this.addScrapingScenario}>
                                         Add Scenario
                                     </Button>
                                 </ButtonGroup>
@@ -291,7 +245,7 @@ class SimpleCrawler extends React.Component {
                             <CardContent>
                                 <div>
                                     <ol>
-                                        {this.state.scenariosViews}
+                                        {this.state.scrapingScenariosView}
                                     </ol>
                                 </div>
                             </CardContent>
@@ -302,6 +256,5 @@ class SimpleCrawler extends React.Component {
         );
     }
 }
-
 
 export default withStyles(styles)(SimpleCrawler);

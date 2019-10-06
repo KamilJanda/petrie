@@ -1,3 +1,4 @@
+import scala.sys.process.Process
 name := """petrie"""
 
 version := "1.0"
@@ -11,10 +12,12 @@ def playScalaModule(name: String): sbt.Project = {
 }
 
 def module(name: String): sbt.Project = {
-  sbt.Project(
-    id = name,
-    base = file("modules") / name
-  ).settings(Common.projectSettings)
+  sbt
+    .Project(
+      id = name,
+      base = file("modules") / name
+    )
+    .settings(Common.projectSettings)
 }
 
 lazy val common = playScalaModule("common")
@@ -33,7 +36,6 @@ lazy val petrie = (project in file("."))
     watchSources ++= (baseDirectory.value / "web-client/public/ui" ** "*").get
   )
 
-
 // Automatic database migration available in testing
 fork in Test := true
 
@@ -41,3 +43,12 @@ libraryDependencies += guice
 libraryDependencies += evolutions
 
 PlayKeys.playRunHooks += WebClientRunHook(baseDirectory.value)
+
+lazy val dockerComposeUpTask = taskKey[Int]("Docker compose up")
+
+dockerComposeUpTask := Process(s"docker-compose up").!
+
+run in Compile := {
+    dockerComposeUpTask.value
+    (run in Compile).evaluated
+  }
