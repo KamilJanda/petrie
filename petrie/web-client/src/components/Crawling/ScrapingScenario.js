@@ -1,5 +1,5 @@
-import React, {Component} from 'react';
-import {withStyles} from "@material-ui/core";
+import React, { Component } from 'react';
+import { withStyles } from "@material-ui/core";
 import DeleteIcon from '@material-ui/icons/Delete';
 import Button from "@material-ui/core/Button";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
@@ -8,12 +8,12 @@ import CardContent from "@material-ui/core/CardContent";
 import Config from "./Config";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Checkbox from "@material-ui/core/Checkbox";
-import {Combobox} from "react-widgets";
+import { Combobox } from "react-widgets";
 import Box from "@material-ui/core/Box";
 import 'react-widgets/dist/css/react-widgets.css';
-import {scenarioBuilder} from "./Utils/RequestBuilder";
+import { scenarioBuilder } from "./Utils/RequestBuilder";
 
-const {Map} = require('immutable');
+const { Map } = require('immutable');
 
 const styles = theme => ({
     root: {
@@ -98,28 +98,50 @@ class ScrapingScenario extends Component {
             selectorConfigCounter: 0,
             isRootScenario: true,
             isDynamicCrawling: props.isDynamicCrawling,
+            isXpathSelector: false
         }
     }
 
     handleNameChange = (event) => {
         const newName = event.target.value;
-        this.setState({name: newName});
-        this.props.onChange(this.props.id, this.buildScenario({name: newName}))
+        this.setState({ name: newName });
+        this.props.onChange(this.props.id, this.buildScenario({ name: newName }))
     };
 
     handleChangeRootScenario = () => {
         const newIsRootScenario = !this.state.isRootScenario;
-        this.setState({isRootScenario: newIsRootScenario});
-        this.props.onChange(this.props.id, this.buildScenario({isRootScenario: newIsRootScenario}))
+        this.setState({ isRootScenario: newIsRootScenario });
+        this.props.onChange(this.props.id, this.buildScenario({ isRootScenario: newIsRootScenario }))
     };
 
-    buildScenario = () => scenarioBuilder({
-        name: this.state.name,
-        elementsToClick: this.state.elementsToClick.valueSeq().toArray(),
-        selectorConfiguration: this.state.selectorConfiguration.valueSeq().toArray(),
-        urlConfiguration: this.state.urlConfiguration.valueSeq().toArray(),
-        isRootScenario: this.state.isRootScenario
-    });
+    handleChangeIsXpathSelector = () => {
+        const newIsXpathSelector = !this.state.isXpathSelector;
+        this.setState({ isXpathSelector: newIsXpathSelector });
+        this.props.onChange(this.props.id, this.buildScenario({ isXpathSelector: newIsXpathSelector }))
+    };
+
+    buildScenario = ({
+        name = this.state.name,
+        elementsToClick = this.state.elementsToClick,
+        selectorConfiguration = this.state.selectorConfiguration,
+        urlConfiguration = this.state.urlConfiguration,
+        isRootScenario = this.state.isRootScenario,
+        isXpathSelector = this.state.isXpathSelector
+    } = {}) => {
+        return {
+            "name": name,
+            "preScrapingConfiguration": {
+                "elementsToClick": elementsToClick.valueSeq().toArray().map(selector => ({ isXpathSelector: isXpathSelector, selector: selector }))
+            },
+            "scrapingConfiguration": {
+                "elementsToFetchUrlsFrom": selectorConfiguration.valueSeq().toArray().map(selector => ({ isXpathSelector: isXpathSelector, selector: selector }))
+            },
+            "postScrapingConfiguration": {
+                "urlConfiguration": urlConfiguration.valueSeq().toArray().map(regex => ({ regex: regex }))
+            },
+            "isRootScenario": isRootScenario
+        }
+    };
 
     addUrlConfig = () => {
         const key = this.state.urlConfigCounter;
@@ -128,21 +150,21 @@ class ScrapingScenario extends Component {
 
             const updatedUrlConfiguration = this.state.urlConfiguration.set(itemId, urlConfiguration);
 
-            this.setState({urlConfiguration: updatedUrlConfiguration});
+            this.setState({ urlConfiguration: updatedUrlConfiguration });
 
-            this.props.onChange(this.props.id, this.buildScenario({urlConfiguration: updatedUrlConfiguration}))
+            this.props.onChange(this.props.id, this.buildScenario({ urlConfiguration: updatedUrlConfiguration }))
         };
 
         this.setState(prevState => ({
             urlConfigView: [...prevState.urlConfigView,
-                <Config
-                    key={key}
-                    id={key}
-                    type="url"
-                    configTitle="Url config"
-                    close={this.deleteUrlConfig}
-                    update={update}
-                />
+            <Config
+                key={key}
+                id={key}
+                type="url"
+                configTitle="Url config"
+                close={this.deleteUrlConfig}
+                update={update}
+            />
             ],
             urlConfigCounter: key + 1
         }));
@@ -157,7 +179,7 @@ class ScrapingScenario extends Component {
             urlConfiguration: updatedUrlConfiguration
         });
 
-        this.props.onChange(this.props.id, this.buildScenario({urlConfiguration: updatedUrlConfiguration}))
+        this.props.onChange(this.props.id, this.buildScenario({ urlConfiguration: updatedUrlConfiguration }))
     };
 
     addSelectorConfig = () => {
@@ -167,21 +189,21 @@ class ScrapingScenario extends Component {
 
             const updatedSelectorConfiguration = this.state.selectorConfiguration.set(itemId, selectorConfiguration);
 
-            this.setState({selectorConfiguration: updatedSelectorConfiguration});
+            this.setState({ selectorConfiguration: updatedSelectorConfiguration });
 
-            this.props.onChange(this.props.id, this.buildScenario({selectorConfiguration: updatedSelectorConfiguration}))
+            this.props.onChange(this.props.id, this.buildScenario({ selectorConfiguration: updatedSelectorConfiguration }))
         };
 
         this.setState(prevState => ({
             selectorConfigView: [...prevState.selectorConfigView,
-                <Config
-                    key={key}
-                    id={key}
-                    type="selector"
-                    configTitle="Selector config"
-                    close={this.deleteSelectorConfig}
-                    update={update}
-                />
+            <Config
+                key={key}
+                id={key}
+                type="selector"
+                configTitle="Selector config"
+                close={this.deleteSelectorConfig}
+                update={update}
+            />
             ],
             selectorConfigCounter: key + 1
         }));
@@ -196,7 +218,7 @@ class ScrapingScenario extends Component {
             selectorConfiguration: updatedSelectorConfiguration
         });
 
-        this.props.onChange(this.props.id, this.buildScenario({selectorConfiguration: updatedSelectorConfiguration}))
+        this.props.onChange(this.props.id, this.buildScenario({ selectorConfiguration: updatedSelectorConfiguration }))
     };
 
     addElementToClick = () => {
@@ -206,21 +228,21 @@ class ScrapingScenario extends Component {
 
             const updatedElementsToClick = this.state.elementsToClick.set(itemId, elementToClick);
 
-            this.setState({elementsToClick: updatedElementsToClick});
+            this.setState({ elementsToClick: updatedElementsToClick });
 
-            this.props.onChange(this.props.id, this.buildScenario({elementsToClick: updatedElementsToClick}))
+            this.props.onChange(this.props.id, this.buildScenario({ elementsToClick: updatedElementsToClick }))
         };
 
         this.setState(prevState => ({
             elementsToClickView: [...prevState.elementsToClickView,
-                <Config
-                    key={key}
-                    id={key}
-                    type="elementsToClick"
-                    configTitle="Element to click"
-                    close={this.deleteElementToClick}
-                    update={update}
-                />
+            <Config
+                key={key}
+                id={key}
+                type="elementsToClick"
+                configTitle="Element to click"
+                close={this.deleteElementToClick}
+                update={update}
+            />
             ],
             elementsToClickCounter: key + 1
         }));
@@ -235,7 +257,7 @@ class ScrapingScenario extends Component {
             elementsToClick: updatedElementsToClick
         });
 
-        this.props.onChange(this.props.id, this.buildScenario({elementsToClick: updatedElementsToClick}))
+        this.props.onChange(this.props.id, this.buildScenario({ elementsToClick: updatedElementsToClick }))
     };
 
     getScenariosNames = () => {
@@ -243,7 +265,7 @@ class ScrapingScenario extends Component {
     };
 
     titleIfNonEmpty(title, array) {
-        const {classes} = this.props;
+        const { classes } = this.props;
         if (array.length > 0) {
             return (<div className={classes.configPartTitle}><h2>{title}</h2></div>)
         } else {
@@ -252,14 +274,14 @@ class ScrapingScenario extends Component {
     }
 
     render() {
-        const {classes} = this.props;
+        const { classes } = this.props;
 
         return (
             <li key={this.props.id} className={classes.noStyle}>
                 <div className={classes.scenario}>
 
                     <DeleteIcon data-id={this.props.id} className={classes.icon}
-                                onClick={() => this.props.close(this.props.id)}
+                        onClick={() => this.props.close(this.props.id)}
                     />
 
                     <CardContent>
@@ -282,6 +304,19 @@ class ScrapingScenario extends Component {
                                 />
                             }
                             label="is Root Scenario"
+                        />
+
+                        <FormControlLabel
+                            className={classes.checkbox}
+                            control={
+                                <Checkbox
+                                    checked={this.state.isXpathSelector}
+                                    onChange={this.handleChangeIsXpathSelector}
+                                    value="checkedB"
+                                    color="primary"
+                                />
+                            }
+                            label="is Xpath selector"
                         />
 
                         <Box className={classes.combobox}>

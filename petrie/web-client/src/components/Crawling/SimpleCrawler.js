@@ -35,6 +35,14 @@ class SimpleCrawler extends React.Component {
 
     sendRequest = () => {
 
+        console.log(buildRequestBody({
+            url: this.state.requestUrl,
+            maxSearchDepth: this.state.depth,
+            scrapDynamically: this.state.crawlDynamically,
+            scrapAllIfNoScenario: this.state.scrapAllIfNoScenario,
+            scenarios: this.state.scenarios.valueSeq().toArray()
+        }))
+
         fetch(requestUrl, {
             method: 'POST',
             headers: {
@@ -98,6 +106,8 @@ class SimpleCrawler extends React.Component {
 
     deleteScrapingScenario = (itemId) => {
         const update = this.state.scrapingScenariosView.filter(el => el.key != itemId);
+
+        this.setState(prevState => ({scenarios: prevState.scenarios.delete(itemId)}));
 
         this.setState({
             scrapingScenariosView: update

@@ -160,6 +160,8 @@ class StreamCrawler extends Component {
     deleteScrapingScenario = (itemId) => {
         const update = this.state.scrapingScenariosView.filter(el => el.key != itemId);
 
+        this.setState(prevState => ({scenarios: prevState.scenarios.delete(itemId)}));
+
         this.setState({
             scrapingScenariosView: update
         })
