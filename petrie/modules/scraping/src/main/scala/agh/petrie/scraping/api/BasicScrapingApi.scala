@@ -1,6 +1,6 @@
 package agh.petrie.scraping.api
 
-import agh.petrie.scraping.actors.receptionist.SimpleReceptionist.{FetchedUrls, GetUrls}
+import agh.petrie.scraping.actors.receptionist.SimpleReceptionist.{FetchedData, GetUrls, WebsiteData}
 import agh.petrie.scraping.model.Configuration
 import akka.actor.{ActorRef, Props}
 import akka.pattern.ask
@@ -10,8 +10,8 @@ import scala.concurrent.Future
 
 trait BasicScrapingApi { self: TopLevelActorsDefined =>
 
-  def getAllLinks(rootUrl: String, configuration: Configuration)(implicit t: Timeout): Future[FetchedUrls] = {
-    (receptionist ? GetUrls(rootUrl, configuration)).asInstanceOf[Future[FetchedUrls]]
+  def getAllLinks(rootUrl: String, configuration: Configuration)(implicit t: Timeout): Future[FetchedData] = {
+    (receptionist ? GetUrls(rootUrl, configuration)).asInstanceOf[Future[FetchedData]]
   }
 
   def fetchLinksAsync(
@@ -25,7 +25,7 @@ trait BasicScrapingApi { self: TopLevelActorsDefined =>
 object BasicScrapingApi {
 
   sealed trait Protocol
-  case class Message(msg: String) extends Protocol
+  case class Message(websiteData: WebsiteData) extends Protocol
   case object Complete extends Protocol {
     val message: String = "done"
   }

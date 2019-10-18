@@ -1,7 +1,7 @@
 package agh.petrie.scraping.service
 
 import agh.petrie.scraping.model.{Configuration, DontScrap, FallbackScenario, ScrapAll, ScrapingScenario}
-import agh.petrie.scraping.service.HtmlParsingService.Html
+import agh.petrie.scraping.service.HtmlParsingService.{Html, WebsiteContent}
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
@@ -12,16 +12,26 @@ import scala.util.matching.Regex
 
 class HtmlParsingService(urlRegexMatchingService: UrlRegexMatchingService) {
 
-  def fetchUrls(html: Html, scenario: Either[FallbackScenario, ScrapingScenario]): Seq[String] = {
+  def fetchContent(html: Html, scenario: Either[FallbackScenario, ScrapingScenario]): WebsiteContent = {
     val document = Jsoup.parse(html.body)
     val absUrls = fetchUrls(document, scenario)
     val urlRegex: Seq[Regex] = scenario.toSeq.flatMap(conf => conf.postScrapingConfiguration.urlConfiguration.map(_.regex.r))
-    absUrls
+    val resultUrls = absUrls
       .filter(_ != "")
       .filter(urlRegexMatchingService.matchRegex(urlRegex))
+    val content = scenario.toOption.flatMap(fetchContent(document, _))
+    WebsiteContent(content, resultUrls)
   }
 
-  def fetchUrls(document: Document, scenario: Either[FallbackScenario, ScrapingScenario]): Seq[String] = {
+  private def fetchContent(document: Document, scrapingScenario: ScrapingScenario): Option[String] = {
+    val text = for {
+      path <- scrapingScenario.scrapingConfiguration.elementsToScrapContentFrom.map(_.selector)
+      el = document.select(path)
+    } yield el.text()
+    text.reduceOption(_ + _)
+  }
+
+  private def fetchUrls(document: Document, scenario: Either[FallbackScenario, ScrapingScenario]): Seq[String] = {
     scenario match {
       case Right(scenario) if scenario.scrapingConfiguration.elementsToFetchUrlsFrom.nonEmpty =>
         fetchBySelector(document, scenario)
@@ -32,7 +42,7 @@ class HtmlParsingService(urlRegexMatchingService: UrlRegexMatchingService) {
     }
   }
 
-  def fetchBySelector(document: Document, scenario: ScrapingScenario): Seq[String] = {
+  private def fetchBySelector(document: Document, scenario: ScrapingScenario): Seq[String] = {
     for {
       path <- scenario.scrapingConfiguration.elementsToFetchUrlsFrom.map(_.selector)
       el = document.select(path)
@@ -41,7 +51,7 @@ class HtmlParsingService(urlRegexMatchingService: UrlRegexMatchingService) {
     } yield url
   }
 
-  def elementsToUrl(elements: Elements): Seq[String] = {
+  private def elementsToUrl(elements: Elements): Seq[String] = {
     (for {
       url <- elements.iterator().asScala
     } yield url.absUrl("href")).toSeq
@@ -49,5 +59,10 @@ class HtmlParsingService(urlRegexMatchingService: UrlRegexMatchingService) {
 }
 
 object HtmlParsingService {
-  case class Html(body: String)
+  final case class Html(body: String)
+
+  final case class WebsiteContent(
+    text: Option[String],
+    urls: Seq[String]
+  )
 }

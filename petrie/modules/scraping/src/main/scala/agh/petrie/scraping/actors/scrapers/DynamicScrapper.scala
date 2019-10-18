@@ -1,6 +1,7 @@
 package agh.petrie.scraping.actors.scrapers
 
 import agh.petrie.scraping.actors.controllers.BaseController.{CheckDone, ScrapFromUrl}
+import agh.petrie.scraping.actors.receptionist.SimpleReceptionist.WebsiteData
 import agh.petrie.scraping.actors.scrapers.AsyncScrapper.Stop
 import agh.petrie.scraping.actors.scrapers.DynamicScrapper.WorkStarted
 import agh.petrie.scraping.actors.scrapers.SeleniumWorker.FetchFromUrl
@@ -28,7 +29,8 @@ class DynamicScrapper(
   override def receive: Receive = {
     case html: Html =>
       val nextScenario = scrapingScenario.flatMap(_.targetScenario)
-      htmlParsingService.fetchUrls(html, scrapingScenario.toRight(configuration.noScenarioFallback)).foreach { url =>
+      val fetchResult = htmlParsingService.fetchContent(html, scrapingScenario.toRight(configuration.noScenarioFallback))
+      fetchResult.urls.foreach { url =>
         context.parent ! ScrapFromUrl(url, depth - 1, nextScenario)
       }
       context.parent ! CheckDone
@@ -36,7 +38,7 @@ class DynamicScrapper(
     case WorkStarted =>
       context.system.scheduler.scheduleOnce(timeout second, self, Stop)
     case Stop =>
-      context.parent ! CheckDone
+      context.parent ! CheckDone(WebsiteData(url, None))
       context.stop(self)
   }
 }

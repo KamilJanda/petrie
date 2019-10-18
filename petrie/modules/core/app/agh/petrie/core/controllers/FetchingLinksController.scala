@@ -3,7 +3,7 @@ package agh.petrie.core.controllers
 import agh.petrie.core.WebScraperProvider
 import agh.petrie.core.model.view.FetchLinksRequest
 import agh.petrie.core.model.view.FetchLinksRequest._
-import agh.petrie.core.model.view.FetchedUrlsView._
+import agh.petrie.core.model.view.FetchedDataView._
 import agh.petrie.core.model.view.WebSocketFormat._
 import agh.petrie.core.repositories.RequestHistoryRepository
 import agh.petrie.core.services.ConfigurationValidationService

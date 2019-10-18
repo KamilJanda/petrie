@@ -2,7 +2,7 @@ package agh.petrie.scraping.actors.receptionist
 
 import agh.petrie.scraping.actors.controllers.BaseController.StartScraping
 import agh.petrie.scraping.actors.controllers.SimpleController
-import agh.petrie.scraping.actors.receptionist.SimpleReceptionist.{FetchedUrls, GetUrls, Job}
+import agh.petrie.scraping.actors.receptionist.SimpleReceptionist.{FetchedData, GetUrls, Job}
 import agh.petrie.scraping.model.Configuration
 import agh.petrie.scraping.service.ScraperResolverService
 import akka.actor.{Actor, ActorRef, Props}
@@ -19,7 +19,7 @@ class SimpleReceptionist(
   }
 
   def working(jobs: Vector[Job]): Receive = {
-    case message: FetchedUrls =>
+    case message: FetchedData =>
       val job = jobs.head
       job.client ! message
       context.become(runNextJob(jobs.tail))
@@ -45,7 +45,14 @@ object SimpleReceptionist {
     Props(new SimpleReceptionist(scraperResolverService))
 
   case class GetUrls(rootUrl: String, configuration: Configuration)
-  case class FetchedUrls(urls: Set[String])
+  case class FetchedData(
+    result: Set[WebsiteData]
+  )
+
+  case class WebsiteData(
+    url: String,
+    content: Option[String]
+  )
 
   private case class Job(client: ActorRef, configuration: Configuration, action: StartScraping)
 }

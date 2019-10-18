@@ -1,6 +1,7 @@
 package agh.petrie.scraping.actors.controllers
 
 import agh.petrie.scraping.actors.controllers.BaseController.{CheckDone, ScrapFromUrl, StartScraping}
+import agh.petrie.scraping.actors.receptionist.SimpleReceptionist.WebsiteData
 import agh.petrie.scraping.model.{Configuration, FallbackScenario, ScrapingScenario}
 import agh.petrie.scraping.service.ScraperResolverService
 import akka.actor.{Actor, ActorRef}
@@ -11,8 +12,7 @@ abstract class BaseController(
 ) extends Actor {
 
   def onNegativeDepth(): Unit
-  def onFetchedUrl(url : String, responseTo: ActorRef): Unit
-  def onCheckDone(children: Set[ActorRef], urls: Set[String], responseTo: ActorRef): Unit
+  def onCheckDone(children: Set[ActorRef], websitesData: Set[WebsiteData], fetched: WebsiteData, responseTo: ActorRef): Unit
 
   override def receive: Receive = {
     case StartScraping(url) if configuration.maxSearchDepth >= 0 =>
@@ -24,18 +24,16 @@ abstract class BaseController(
     case _: StartScraping => onNegativeDepth()
   }
 
-  def checkingUrls(children: Set[ActorRef], urls: Set[String], responseTo: ActorRef): Receive = {
-    case ScrapFromUrl(url , depth, scenario) if depth >= 0 && !urls.contains(url) =>
+  def checkingUrls(children: Set[ActorRef], websitesData: Set[WebsiteData], responseTo: ActorRef): Receive = {
+    case ScrapFromUrl(url, depth, scenario) if depth >= 0 && !websitesData.map(_.url).contains(url) =>
       val worker = scraperResolverService.getScraper(url, depth, scenario, configuration, context)
-      context.become(checkingUrls(children + worker, urls + url, responseTo))
-      onFetchedUrl(url, responseTo)
+      context.become(checkingUrls(children + worker, websitesData, responseTo))
 
     case ScrapFromUrl(url, _, _) =>
-      onFetchedUrl(url ,responseTo)
-      context.become(checkingUrls(children, urls + url, responseTo))
+      context.become(checkingUrls(children, websitesData, responseTo))
 
-    case CheckDone =>
-      onCheckDone(children, urls, responseTo)
+    case CheckDone(websiteData) =>
+      onCheckDone(children, websitesData + websiteData, websiteData, responseTo)
   }
 }
 
@@ -47,5 +45,7 @@ object BaseController {
     scenario: Option[ScrapingScenario]
   )
   case class StartScraping(url: String)
-  case object CheckDone
+  case class CheckDone(
+    websiteData: WebsiteData
+  )
 }
