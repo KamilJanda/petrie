@@ -14,8 +14,9 @@ class HtmlParsingService(urlRegexMatchingService: UrlRegexMatchingService) {
 
   def fetchContent(html: Html, scenario: Either[FallbackScenario, ScrapingScenario]): WebsiteContent = {
     val document = Jsoup.parse(html.body)
-    val absUrls = fetchUrls(document, scenario)
-    val urlRegex: Seq[Regex] = scenario.toSeq.flatMap(conf => conf.postScrapingConfiguration.urlConfiguration.map(_.regex.r))
+    val absUrls  = fetchUrls(document, scenario)
+    val urlRegex: Seq[Regex] =
+      scenario.toSeq.flatMap(conf => conf.postScrapingConfiguration.urlConfiguration.map(_.regex.r))
     val resultUrls = absUrls
       .filter(_ != "")
       .filter(urlRegexMatchingService.matchRegex(urlRegex))
@@ -45,7 +46,7 @@ class HtmlParsingService(urlRegexMatchingService: UrlRegexMatchingService) {
   private def fetchBySelector(document: Document, scenario: ScrapingScenario): Seq[String] = {
     for {
       path <- scenario.scrapingConfiguration.elementsToFetchUrlsFrom.map(_.selector)
-      el = document.select(path)
+      el       = document.select(path)
       elements = el.select("a[href]")
       url <- elementsToUrl(elements)
     } yield url

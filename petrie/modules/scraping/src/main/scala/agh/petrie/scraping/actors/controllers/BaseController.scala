@@ -8,11 +8,16 @@ import akka.actor.{Actor, ActorRef}
 
 abstract class BaseController(
   scraperResolverService: ScraperResolverService,
-  configuration:          Configuration
+  configuration: Configuration
 ) extends Actor {
 
   def onNegativeDepth(): Unit
-  def onCheckDone(children: Set[ActorRef], websitesData: Set[WebsiteData], fetched: WebsiteData, responseTo: ActorRef): Unit
+  def onCheckDone(
+    children: Set[ActorRef],
+    websitesData: Set[WebsiteData],
+    fetched: WebsiteData,
+    responseTo: ActorRef
+  ): Unit
 
   override def receive: Receive = {
     case StartScraping(url) if configuration.maxSearchDepth >= 0 =>

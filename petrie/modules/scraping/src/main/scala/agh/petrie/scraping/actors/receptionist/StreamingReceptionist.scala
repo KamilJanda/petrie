@@ -7,7 +7,7 @@ import agh.petrie.scraping.model.Configuration
 import agh.petrie.scraping.service.ScraperResolverService
 import akka.actor.{Actor, ActorRef, Props}
 
-class  StreamingReceptionist(
+class StreamingReceptionist(
   scraperResolverService: ScraperResolverService,
   socket: ActorRef
 ) extends Actor {

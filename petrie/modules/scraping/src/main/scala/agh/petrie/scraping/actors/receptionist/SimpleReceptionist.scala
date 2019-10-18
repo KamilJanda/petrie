@@ -31,7 +31,7 @@ class SimpleReceptionist(
     if (jobs.isEmpty) {
       idle
     } else {
-      val job = jobs.head
+      val job        = jobs.head
       val controller = context.actorOf(SimpleController.props(scraperResolverService, job.configuration))
       controller ! job.action
       working(jobs)

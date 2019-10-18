@@ -25,7 +25,9 @@ class ConfigurationValidationService {
 
   private def validateTargetDoesNotExists(configurationView: ConfigurationView): Validated[String, Unit] = {
     val scenarios = configurationView.scenarios
-    val allTargetsExists = scenarios.forall(scenario => scenario.targetScenario.isEmpty || scenarios.exists(_.name == scenario.targetScenario.get))
+    val allTargetsExists = scenarios.forall(
+      scenario => scenario.targetScenario.isEmpty || scenarios.exists(_.name == scenario.targetScenario.get)
+    )
     allTargetsExists.trueOrMessage("Unknown target Scenario defined")
   }
 
@@ -35,7 +37,7 @@ class ConfigurationValidationService {
   }
 
   private def validateDuplicateScenarioName(configurationView: ConfigurationView): Validated[String, Unit] = {
-    val scenarioNames = configurationView.scenarios.map(_.name)
+    val scenarioNames               = configurationView.scenarios.map(_.name)
     val allScenariosWithUniqueNames = scenarioNames.distinct.size == scenarioNames.size
     allScenariosWithUniqueNames.trueOrMessage("Duplicate scenario name")
   }

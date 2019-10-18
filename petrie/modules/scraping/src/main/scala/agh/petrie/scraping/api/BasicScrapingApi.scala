@@ -10,15 +10,13 @@ import scala.concurrent.Future
 
 trait BasicScrapingApi { self: TopLevelActorsDefined =>
 
-  def getAllLinks(rootUrl: String, configuration: Configuration)(implicit t: Timeout): Future[FetchedData] = {
+  def getAllLinks(rootUrl: String, configuration: Configuration)(implicit t: Timeout): Future[FetchedData] =
     (receptionist ? GetUrls(rootUrl, configuration)).asInstanceOf[Future[FetchedData]]
-  }
 
   def fetchLinksAsync(
     socket: ActorRef
-  ): Props = {
+  ): Props =
     getAsyncReceptionist(socket)
-  }
 
 }
 

@@ -32,7 +32,7 @@ class FetchingLinksController @Inject()(
   configurationViewConverter: ConfigurationViewConverter,
   configurationValidationService: ConfigurationValidationService
 )(implicit ec: ExecutionContext, materialize: akka.stream.Materializer, as: ActorSystem)
-    extends AbstractController(cc) {
+  extends AbstractController(cc) {
 
   def fetchLinks = Action.async(parse.json) { implicit request =>
     implicit val timeout = Timeout(480 seconds)
@@ -46,7 +46,7 @@ class FetchingLinksController @Inject()(
             case _ =>
               for {
                 _ <- dbConfigProvider.get.db.run(requestHistoryRepository.save(fetchLinksRequest))
-                configuration =  configurationViewConverter.fromView(fetchLinksRequest.configuration)
+                configuration = configurationViewConverter.fromView(fetchLinksRequest.configuration)
                 fetched <- webScraperProvider.get.getAllLinks(fetchLinksRequest.url, configuration)
                 fetchedView = fetchedUrlsViewConverter.toView(fetched)
               } yield Ok(Json.toJson(fetchedView))

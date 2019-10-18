@@ -12,6 +12,6 @@ case class WebsiteDataView(
 )
 
 object FetchedDataView {
-  implicit lazy val writes: Writes[FetchedDataView] = Json.writes[FetchedDataView]
+  implicit lazy val writes: Writes[FetchedDataView]            = Json.writes[FetchedDataView]
   implicit lazy val websiteDataWrites: Writes[WebsiteDataView] = Json.writes[WebsiteDataView]
 }

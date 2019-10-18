@@ -20,7 +20,8 @@ class SeleniumWorker(seleniumScrapingService: SeleniumScrapingService) extends A
 
 object SeleniumWorker {
   trait SeleniumWorkerMessage
-  case class FetchFromUrl(url: String, preScrapingConfiguration: Option[PreScrapingConfiguration]) extends SeleniumWorkerMessage
+  case class FetchFromUrl(url: String, preScrapingConfiguration: Option[PreScrapingConfiguration])
+    extends SeleniumWorkerMessage
 
   def props(seleniumScrapingService: SeleniumScrapingService) = Props(new SeleniumWorker(seleniumScrapingService))
 }

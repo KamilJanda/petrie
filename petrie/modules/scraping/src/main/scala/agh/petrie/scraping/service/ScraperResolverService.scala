@@ -6,7 +6,6 @@ import agh.petrie.scraping.model.{Configuration, DynamicScraping, ScrapingScenar
 import agh.petrie.scraping.web.AsyncScrapingService
 import akka.actor.{ActorContext, ActorSystem}
 
-
 class ScraperResolverService(
   asyncScrapingService: AsyncScrapingService,
   htmlParsingService: HtmlParsingService,
@@ -17,11 +16,11 @@ class ScraperResolverService(
   val seleniumWorkerRouter = actorSystem.actorOf(SeleniumWorkerRouter.props(webScraperConfiguration))
 
   def getScraper(
-                  url: String,
-                  depth: Int,
-                  scrapingScenario: Option[ScrapingScenario],
-                  configuration: Configuration,
-                  context: ActorContext
+    url: String,
+    depth: Int,
+    scrapingScenario: Option[ScrapingScenario],
+    configuration: Configuration,
+    context: ActorContext
   ) = {
     if (configuration.scrapingType == DynamicScraping) {
       context.actorOf(
@@ -44,7 +43,8 @@ class ScraperResolverService(
           scrapingScenario,
           asyncScrapingService,
           htmlParsingService,
-          webScraperConfiguration.asyncScraperTimeoutInSeconds)
+          webScraperConfiguration.asyncScraperTimeoutInSeconds
+        )
       )
     }
   }

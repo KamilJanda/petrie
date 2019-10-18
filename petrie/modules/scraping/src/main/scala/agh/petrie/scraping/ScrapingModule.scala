@@ -11,10 +11,10 @@ trait ScrapingModule {
   def actorSystem: ActorSystem
   def webScraperConfiguration: WebScraperConfiguration
 
-  private[scraping] lazy val asyncHttpClient = wire[AsyncHttpClient]
-  private[scraping] lazy val htmlParsingService = wire[HtmlParsingService]
+  private[scraping] lazy val asyncHttpClient         = wire[AsyncHttpClient]
+  private[scraping] lazy val htmlParsingService      = wire[HtmlParsingService]
   private[scraping] lazy val urlRegexMatchingService = wire[UrlRegexMatchingService]
-  private[scraping] lazy val asyncScrapingService = wire[AsyncScrapingService]
+  private[scraping] lazy val asyncScrapingService    = wire[AsyncScrapingService]
 
   private[scraping] lazy val scraperResolverService = wire[ScraperResolverService]
 }
