@@ -5,15 +5,17 @@ import agh.petrie.core.viewconverters.WebsocketConverterActor.GetUrlsView
 import agh.petrie.scraping.actors.receptionist.StreamingReceptionist.GetUrls
 import akka.actor.{Actor, ActorRef, Props}
 
-class WebsocketConverterActor(receptionist: ActorRef, configurationViewConverter: ConfigurationViewConverter) extends Actor {
+class WebsocketConverterActor(receptionist: ActorRef, configurationViewConverter: ConfigurationViewConverter)
+  extends Actor {
   override def receive: Receive = {
     case GetUrlsView(url, config) =>
       receptionist forward GetUrls(url, configurationViewConverter.fromView(config))
   }
 }
 
-object WebsocketConverterActor{
+object WebsocketConverterActor {
   case class GetUrlsView(url: String, configuration: ConfigurationView)
 
-  def props(receptionist: ActorRef, configurationViewConverter: ConfigurationViewConverter) =  Props(new WebsocketConverterActor(receptionist, configurationViewConverter))
+  def props(receptionist: ActorRef, configurationViewConverter: ConfigurationViewConverter) =
+    Props(new WebsocketConverterActor(receptionist, configurationViewConverter))
 }

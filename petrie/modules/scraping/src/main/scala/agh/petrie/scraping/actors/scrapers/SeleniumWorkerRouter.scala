@@ -11,7 +11,7 @@ class SeleniumWorkerRouter(webScraperConfiguration: WebScraperConfiguration) ext
   var router = {
     val routees = (0 until webScraperConfiguration.seleniumDriversCount).map(id => {
       val seleniumScrapingService = new SeleniumScrapingService
-      val routee = context.actorOf(SeleniumWorker.props(seleniumScrapingService), s"selenium_worker$id")
+      val routee                  = context.actorOf(SeleniumWorker.props(seleniumScrapingService), s"selenium_worker$id")
       context.watch(routee)
       ActorRefRoutee(routee)
     })
@@ -24,7 +24,7 @@ class SeleniumWorkerRouter(webScraperConfiguration: WebScraperConfiguration) ext
     case Terminated(a) =>
       router = router.removeRoutee(a)
       val seleniumScrapingService = new SeleniumScrapingService
-      val r = context.actorOf(SeleniumWorker.props(seleniumScrapingService))
+      val r                       = context.actorOf(SeleniumWorker.props(seleniumScrapingService))
       context.watch(r)
       router = router.addRoutee(r)
   }
@@ -32,7 +32,6 @@ class SeleniumWorkerRouter(webScraperConfiguration: WebScraperConfiguration) ext
 
 object SeleniumWorkerRouter {
 
-  def props(webScraperConfiguration: WebScraperConfiguration) = {
+  def props(webScraperConfiguration: WebScraperConfiguration) =
     Props(new SeleniumWorkerRouter(webScraperConfiguration))
-  }
 }

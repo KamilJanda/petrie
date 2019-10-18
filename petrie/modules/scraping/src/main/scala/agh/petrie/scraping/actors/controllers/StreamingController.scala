@@ -13,7 +13,12 @@ class StreamingController(
 ) extends BaseController(scraperResolverService, configuration) {
   override def onNegativeDepth = stopFetching
 
-  override def onCheckDone(children: Set[ActorRef], websitesData: Set[WebsiteData], websiteData: WebsiteData, responseTo: ActorRef): Unit = {
+  override def onCheckDone(
+    children: Set[ActorRef],
+    websitesData: Set[WebsiteData],
+    websiteData: WebsiteData,
+    responseTo: ActorRef
+  ): Unit = {
     webSocketActor ! Message(websiteData)
     if ((children - sender).isEmpty) {
       stopFetching

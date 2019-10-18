@@ -30,7 +30,8 @@ class AsyncScrapper(
   override def receive: Receive = {
     case html: Html =>
       val nextScenario = scrapingScenario.flatMap(_.targetScenario)
-      val fetchResult = htmlParsingService.fetchContent(html, scrapingScenario.toRight(configuration.noScenarioFallback))
+      val fetchResult =
+        htmlParsingService.fetchContent(html, scrapingScenario.toRight(configuration.noScenarioFallback))
       fetchResult.urls.foreach { url =>
         context.parent ! ScrapFromUrl(url, depth - 1, nextScenario)
       }
@@ -51,7 +52,10 @@ object AsyncScrapper {
     asyncScrapingService: AsyncScrapingService,
     htmlParsingService: HtmlParsingService,
     timeout: Int
-  ) = Props(new AsyncScrapper(url, depth, configuration, scrapingScenario, asyncScrapingService, htmlParsingService, timeout))
+  ) =
+    Props(
+      new AsyncScrapper(url, depth, configuration, scrapingScenario, asyncScrapingService, htmlParsingService, timeout)
+    )
 
   case object Stop
 }

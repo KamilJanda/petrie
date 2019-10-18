@@ -17,9 +17,9 @@ case class RequestHistoryRow(
 )
 
 class RequestHistories(tag: Tag) extends Table[RequestHistoryRow](tag, "request_history") {
-  def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
-  def date = column[DateTime]("date")
-  def url = column[String]("url")
+  def id    = column[Long]("id", O.PrimaryKey, O.AutoInc)
+  def date  = column[DateTime]("date")
+  def url   = column[String]("url")
   def depth = column[Int]("depth")
 
   def * = (id.?, date, url, depth) <> (RequestHistoryRow.tupled, RequestHistoryRow.unapply)

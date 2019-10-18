@@ -10,7 +10,7 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 class AsyncScrapingService(asyncHttpClient: AsyncHttpClient) {
 
   def getUrlContent(url: String)(implicit exec: Executor, ec: ExecutionContext): Future[Html] = {
-    val call = asyncHttpClient.prepareGet(url).execute()
+    val call    = asyncHttpClient.prepareGet(url).execute()
     val promise = Promise[Html]
     call.addListener(getHtmlListener(promise, call), exec)
     promise.future

@@ -8,14 +8,18 @@ import akka.actor.{ActorRef, Props}
 
 class SimpleController(
   scraperResolverService: ScraperResolverService,
-  configuration:          Configuration
+  configuration: Configuration
 ) extends BaseController(scraperResolverService, configuration) {
 
-  override def onNegativeDepth(): Unit = {
+  override def onNegativeDepth(): Unit =
     sender ! FetchedData(Set())
-  }
 
-  override def onCheckDone(children: Set[ActorRef], websitesData: Set[WebsiteData], websiteData: WebsiteData, responseTo: ActorRef): Unit = {
+  override def onCheckDone(
+    children: Set[ActorRef],
+    websitesData: Set[WebsiteData],
+    websiteData: WebsiteData,
+    responseTo: ActorRef
+  ): Unit = {
     if ((children - sender).isEmpty) {
       responseTo ! SimpleReceptionist.FetchedData(websitesData)
       context.stop(self)
@@ -25,7 +29,7 @@ class SimpleController(
   }
 }
 
-object SimpleController{
+object SimpleController {
   def props(scraperResolverService: ScraperResolverService, configuration: Configuration) =
     Props(new SimpleController(scraperResolverService, configuration))
 }
