@@ -25,7 +25,8 @@ final case class PreScrapingConfigurationView(
 )
 
 final case class ScrapingConfigurationView(
-  elementsToFetchUrlsFrom: List[SelectorConfigurationView]
+  elementsToFetchUrlsFrom: List[SelectorConfigurationView],
+  elementsToScrapContentFrom: List[SelectorConfigurationView]
 )
 
 final case class PostScrapingConfigurationView(

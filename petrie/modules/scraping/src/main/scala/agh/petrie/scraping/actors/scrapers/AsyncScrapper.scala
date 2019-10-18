@@ -1,6 +1,7 @@
 package agh.petrie.scraping.actors.scrapers
 
 import agh.petrie.scraping.actors.controllers.BaseController.{CheckDone, ScrapFromUrl}
+import agh.petrie.scraping.actors.receptionist.SimpleReceptionist.WebsiteData
 import agh.petrie.scraping.actors.scrapers.AsyncScrapper.Stop
 import agh.petrie.scraping.model.{Configuration, ScrapingScenario}
 import agh.petrie.scraping.service.HtmlParsingService
@@ -29,13 +30,14 @@ class AsyncScrapper(
   override def receive: Receive = {
     case html: Html =>
       val nextScenario = scrapingScenario.flatMap(_.targetScenario)
-      htmlParsingService.fetchUrls(html, scrapingScenario.toRight(configuration.noScenarioFallback)).foreach { url =>
+      val fetchResult = htmlParsingService.fetchContent(html, scrapingScenario.toRight(configuration.noScenarioFallback))
+      fetchResult.urls.foreach { url =>
         context.parent ! ScrapFromUrl(url, depth - 1, nextScenario)
       }
-      context.parent ! CheckDone
+      context.parent ! CheckDone(WebsiteData(url, fetchResult.text))
       context.stop(self)
     case Stop =>
-      context.parent ! CheckDone
+      context.parent ! CheckDone(WebsiteData(url, None))
       context.stop(self)
   }
 }

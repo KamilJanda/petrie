@@ -7,7 +7,7 @@ import javax.inject.Singleton
 
 @Singleton
 class ConfigurationViewConverter {
-  def fromView(configurationView: ConfigurationView) = {
+  def fromView(configurationView: ConfigurationView): Configuration = {
 
     val configuration = configurationView.into[Configuration]
       .withFieldComputed(_.noScenarioFallback, view => if(view.scrapAllIfNoScenario) ScrapAll else DontScrap)
@@ -46,7 +46,10 @@ class ConfigurationViewConverter {
       scenarioView.id,
       scenarioView.name,
       scenarioView.preScrapingConfiguration.into[PreScrapingConfiguration].withFieldComputed(_.elementsToClick,  _.elementsToClick.map(toSelectorConfiguration)).transform,
-      scenarioView.scrapingConfiguration.into[ScrapingConfiguration].withFieldComputed(_.elementsToFetchUrlsFrom, _.elementsToFetchUrlsFrom.map(toSelectorConfiguration)).transform,
+      scenarioView.scrapingConfiguration.into[ScrapingConfiguration]
+        .withFieldComputed(_.elementsToFetchUrlsFrom, _.elementsToFetchUrlsFrom.map(toSelectorConfiguration))
+        .withFieldComputed(_.elementsToScrapContentFrom, _.elementsToScrapContentFrom.map(toSelectorConfiguration))
+        .transform,
       scenarioView.postScrapingConfiguration.into[PostScrapingConfiguration].withFieldComputed(_.urlConfiguration,   _.urlConfiguration.map(_.transformInto[UrlConfiguration])).transform,
       None
     )

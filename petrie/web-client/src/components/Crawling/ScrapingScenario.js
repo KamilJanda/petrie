@@ -93,9 +93,12 @@ class ScrapingScenario extends Component {
             urlConfigView: [],
             urlConfiguration: new Map(),
             urlConfigCounter: 0,
-            selectorConfigView: [],
-            selectorConfiguration: new Map(),
-            selectorConfigCounter: 0,
+            elementsToFetchUrlFromSelectorConfigView: [],
+            elementsToFetchUrlFromSelectorConfiguration: new Map(),
+            elementsToFetchUrlsFromSelectorConfigCounter: 0,
+            elementsToFetchTextFromSelectorConfigView: [],
+            elementsToFetchTextFromSelectorConfiguration: new Map(),
+            elementsToFetchTextFromSelectorConfigCounter: 0,
             isRootScenario: true,
             isDynamicCrawling: props.isDynamicCrawling,
             isXpathSelector: false
@@ -123,7 +126,8 @@ class ScrapingScenario extends Component {
     buildScenario = ({
         name = this.state.name,
         elementsToClick = this.state.elementsToClick,
-        selectorConfiguration = this.state.selectorConfiguration,
+        elementsToFetchUrlFromSelectorConfiguration = this.state.elementsToFetchUrlFromSelectorConfiguration,
+        elementsToFetchTextFromSelectorConfiguration = this.state.elementsToFetchTextFromSelectorConfiguration,
         urlConfiguration = this.state.urlConfiguration,
         isRootScenario = this.state.isRootScenario,
         isXpathSelector = this.state.isXpathSelector
@@ -134,7 +138,8 @@ class ScrapingScenario extends Component {
                 "elementsToClick": elementsToClick.valueSeq().toArray().map(selector => ({ isXpathSelector: isXpathSelector, selector: selector }))
             },
             "scrapingConfiguration": {
-                "elementsToFetchUrlsFrom": selectorConfiguration.valueSeq().toArray().map(selector => ({ isXpathSelector: isXpathSelector, selector: selector }))
+                "elementsToFetchUrlsFrom": elementsToFetchUrlFromSelectorConfiguration.valueSeq().toArray().map(selector => ({ isXpathSelector: isXpathSelector, selector: selector })),
+                "elementsToScrapContentFrom": elementsToFetchTextFromSelectorConfiguration.valueSeq().toArray().map(selector => ({ isXpathSelector: isXpathSelector, selector: selector }))
             },
             "postScrapingConfiguration": {
                 "urlConfiguration": urlConfiguration.valueSeq().toArray().map(regex => ({ regex: regex }))
@@ -183,42 +188,81 @@ class ScrapingScenario extends Component {
     };
 
     addSelectorConfig = () => {
-        const key = this.state.selectorConfigCounter;
+        const key = this.state.elementsToFetchUrlsFromSelectorConfigCounter;
 
-        const update = (itemId, selectorConfiguration) => {
+        const update = (itemId, elementsToFetchUrlFromSelectorConfiguration) => {
 
-            const updatedSelectorConfiguration = this.state.selectorConfiguration.set(itemId, selectorConfiguration);
+            const updatedSelectorConfiguration = this.state.elementsToFetchUrlFromSelectorConfiguration.set(itemId, elementsToFetchUrlFromSelectorConfiguration);
 
-            this.setState({ selectorConfiguration: updatedSelectorConfiguration });
+            this.setState({ elementsToFetchUrlFromSelectorConfiguration: updatedSelectorConfiguration });
 
-            this.props.onChange(this.props.id, this.buildScenario({ selectorConfiguration: updatedSelectorConfiguration }))
+            this.props.onChange(this.props.id, this.buildScenario({ elementsToFetchUrlFromSelectorConfiguration: updatedSelectorConfiguration }))
         };
 
         this.setState(prevState => ({
-            selectorConfigView: [...prevState.selectorConfigView,
+            elementsToFetchUrlFromSelectorConfigView: [...prevState.elementsToFetchUrlFromSelectorConfigView,
             <Config
                 key={key}
                 id={key}
                 type="selector"
-                configTitle="Selector config"
+                configTitle="Url selector config"
                 close={this.deleteSelectorConfig}
                 update={update}
             />
             ],
-            selectorConfigCounter: key + 1
+            elementsToFetchUrlsFromSelectorConfigCounter: key + 1
         }));
     };
 
     deleteSelectorConfig = (itemId) => {
-        const updatedSelectorConfigView = this.state.selectorConfigView.filter(el => el.key != itemId);
-        const updatedSelectorConfiguration = this.state.selectorConfiguration.delete(itemId);
+        const updatedSelectorConfigView = this.state.elementsToFetchUrlFromSelectorConfigView.filter(el => el.key != itemId);
+        const updatedSelectorConfiguration = this.state.elementsToFetchUrlFromSelectorConfiguration.delete(itemId);
 
         this.setState({
-            selectorConfigView: updatedSelectorConfigView,
-            selectorConfiguration: updatedSelectorConfiguration
+            elementsToFetchUrlFromSelectorConfigView: updatedSelectorConfigView,
+            elementsToFetchUrlFromSelectorConfiguration: updatedSelectorConfiguration
         });
 
-        this.props.onChange(this.props.id, this.buildScenario({ selectorConfiguration: updatedSelectorConfiguration }))
+        this.props.onChange(this.props.id, this.buildScenario({ elementsToFetchUrlFromSelectorConfiguration: updatedSelectorConfiguration }))
+    };
+
+    addTextSelectorConfig = () => {
+        const key = this.state.elementsToFetchTextFromSelectorConfigCounter;
+
+        const update = (itemId, elementsToFetchTextFromSelectorConfiguration) => {
+
+            const updatedSelectorConfiguration = this.state.elementsToFetchTextFromSelectorConfiguration.set(itemId, elementsToFetchTextFromSelectorConfiguration);
+
+            this.setState({ elementsToFetchTextFromSelectorConfiguration: updatedSelectorConfiguration });
+
+            this.props.onChange(this.props.id, this.buildScenario({ elementsToFetchTextFromSelectorConfiguration: updatedSelectorConfiguration }))
+        };
+
+        this.setState(prevState => ({
+            elementsToFetchTextFromSelectorConfigView: [...prevState.elementsToFetchTextFromSelectorConfigView,
+                <Config
+                    key={key}
+                    id={key}
+                    type="selector"
+                    configTitle="Text selector config"
+                    close={this.deleteTextSelectorConfig}
+                    update={update}
+                />
+            ],
+            elementsToFetchTextFromSelectorConfigCounter: key + 1
+        }));
+    };
+
+    deleteTextSelectorConfig = (itemId) => {
+        const updatedSelectorConfigView = this.state.elementsToFetchTextFromSelectorConfigView.filter(el => el.key != itemId);
+        const updatedSelectorConfiguration = this.state.elementsToFetchTextFromSelectorConfiguration.delete(itemId);
+
+        this.setState({
+            elementsToFetchTextFromSelectorConfigView: updatedSelectorConfigView,
+            elementsToFetchTextFromSelectorConfiguration: updatedSelectorConfiguration
+        });
+
+        this.props.onChange(this.props.id, this.buildScenario({ elementsToFetchTextFromSelectorConfiguration: updatedSelectorConfiguration }))
     };
 
     addElementToClick = () => {
@@ -306,19 +350,6 @@ class ScrapingScenario extends Component {
                             label="is Root Scenario"
                         />
 
-                        <FormControlLabel
-                            className={classes.checkbox}
-                            control={
-                                <Checkbox
-                                    checked={this.state.isXpathSelector}
-                                    onChange={this.handleChangeIsXpathSelector}
-                                    value="checkedB"
-                                    color="primary"
-                                />
-                            }
-                            label="is Xpath selector"
-                        />
-
                         <Box className={classes.combobox}>
                             <label>Target Scenario </label>
                             <Combobox
@@ -343,7 +374,12 @@ class ScrapingScenario extends Component {
                             <Button
                                 onClick={this.addSelectorConfig}
                             >
-                                Add Scraping Config
+                                Add Url Scraping Config
+                            </Button>
+                            <Button
+                                onClick={this.addTextSelectorConfig}
+                            >
+                                Add Text Scraping Config
                             </Button>
                             <Button
                                 onClick={this.addUrlConfig}
@@ -360,8 +396,9 @@ class ScrapingScenario extends Component {
                             {this.state.elementsToClickView}
                         </ol>
                         <ol>
-                            {this.titleIfNonEmpty("Scraping Configuration: ", this.state.selectorConfigView)}
-                            {this.state.selectorConfigView}
+                            {this.titleIfNonEmpty("Scraping Configuration: ", this.state.elementsToFetchUrlFromSelectorConfigView)}
+                            {this.state.elementsToFetchUrlFromSelectorConfigView}
+                            {this.state.elementsToFetchTextFromSelectorConfigView}
                         </ol>
                         <ol>
                             {this.titleIfNonEmpty("PostScraping Configuration: ", this.state.urlConfigView)}
