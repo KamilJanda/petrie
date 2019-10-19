@@ -34,6 +34,7 @@ class StreamCrawler extends Component {
             scrapingScenariosView: [],
             scenarios: new Map(),
             scrapingScenariosCounter: 0,
+            isTopicalCrawling: false,
         };
 
         this.socket = new WebSocket(wsUri);
@@ -134,6 +135,12 @@ class StreamCrawler extends Component {
         })
     };
 
+    handleIsTopicalCrawlingRadio = (e) => {
+        this.setState(prevState => ({
+            isTopicalCrawling: !prevState.isTopicalCrawling
+        }))
+    };
+
     handleScenarioChange = (scenarioId, value) => {
         this.setState(prevState => ({scenarios: prevState.scenarios.set(scenarioId, value)}));
     };
@@ -150,6 +157,7 @@ class StreamCrawler extends Component {
                     onChange={this.handleScenarioChange}
                     getScenariosNames={this.getScenariosNames}
                     isDynamicCrawling={this.state.crawlDynamically}
+                    isTopicalCrawling={this.state.isTopicalCrawling}
                 />
             ],
             scrapingScenariosCounter: key + 1

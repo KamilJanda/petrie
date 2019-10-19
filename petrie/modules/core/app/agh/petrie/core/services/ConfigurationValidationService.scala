@@ -1,7 +1,7 @@
 package agh.petrie.core.services
 
 import agh.petrie.common.ValidationUtils._
-import agh.petrie.core.model.view.ConfigurationView
+import agh.petrie.core.model.view.{ConfigurationView, ScrapingConfigurationView, ScrapingScenarioView, SelectorConfigurationView}
 import cats.data.Validated
 import cats.implicits._
 import javax.inject.Singleton
@@ -14,7 +14,8 @@ class ConfigurationValidationService {
       validateNoRootScenario(configurationView),
       validateTargetDoesNotExists(configurationView),
       validateEmptyScenarioName(configurationView),
-      validateDuplicateScenarioName(configurationView)
+      validateDuplicateScenarioName(configurationView),
+      validatedTopicAndSelectorBothPresent(configurationView)
     ).combineAll.toEither
   }
 
@@ -37,9 +38,26 @@ class ConfigurationValidationService {
   }
 
   private def validateDuplicateScenarioName(configurationView: ConfigurationView): Validated[String, Unit] = {
-    val scenarioNames               = configurationView.scenarios.map(_.name)
+    val scenarioNames = configurationView.scenarios.map(_.name)
     val allScenariosWithUniqueNames = scenarioNames.distinct.size == scenarioNames.size
     allScenariosWithUniqueNames.trueOrMessage("Duplicate scenario name")
   }
 
+  private def validatedTopicAndSelectorBothPresent(configurationView: ConfigurationView): Validated[String, Unit] = {
+
+    val onlyOneOptionDefined = !(configurationView.scenarios.map(scenario =>
+      isSelectorConfigurationDefined(scenario.scrapingConfiguration) &&
+        isTopicConfigurationDefined(scenario.scrapingConfiguration)
+    ).foldLeft(false)(_ || _))
+
+    onlyOneOptionDefined.trueOrMessage("Scraping configuration must be either Topical or Focused")
+  }
+
+  private def isSelectorConfigurationDefined(scrapingConfiguration: ScrapingConfigurationView): Boolean = {
+    scrapingConfiguration.elementsToFetchUrlsFrom.nonEmpty || scrapingConfiguration.elementsToScrapContentFrom.nonEmpty
+  }
+
+  private def isTopicConfigurationDefined(scrapingConfiguration: ScrapingConfigurationView): Boolean = {
+    scrapingConfiguration.topicsToFetchUrlsFrom.nonEmpty
+  }
 }

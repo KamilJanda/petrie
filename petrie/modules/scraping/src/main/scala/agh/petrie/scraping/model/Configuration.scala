@@ -28,11 +28,12 @@ object PreScrapingConfiguration {
 
 final case class ScrapingConfiguration(
   elementsToFetchUrlsFrom: List[SelectorConfiguration],
-  elementsToScrapContentFrom: List[SelectorConfiguration]
+  elementsToScrapContentFrom: List[SelectorConfiguration],
+  topicsToFetchUrlsFrom: List[ScrapingTopic]
 )
 
 object ScrapingConfiguration {
-  def empty() = ScrapingConfiguration(List(), List())
+  def empty() = ScrapingConfiguration(List(), List(),List())
 }
 
 final case class PostScrapingConfiguration(
@@ -50,4 +51,9 @@ final case class UrlConfiguration(
 final case class SelectorConfiguration(
   selectorType: SelectorType,
   selector: String
+)
+
+final case class ScrapingTopic(
+  topicType: TopicType,
+  topicSelector: String
 )

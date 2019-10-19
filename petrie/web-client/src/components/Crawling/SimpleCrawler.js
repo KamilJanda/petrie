@@ -13,6 +13,7 @@ import FormLabel from "@material-ui/core/FormLabel";
 import styles from "./Style/CrawlerStyle";
 import {buildRequestBody, scenarioBuilder} from "./Utils/RequestBuilder";
 import ScrapingScenario from "./ScrapingScenario";
+import Checkbox from "@material-ui/core/Checkbox";
 
 const requestUrl = "http://localhost:9000/core/links";
 
@@ -30,6 +31,7 @@ class SimpleCrawler extends React.Component {
             scrapingScenariosView: [],
             scenarios: new Map(),
             scrapingScenariosCounter: 0,
+            isTopicalCrawling: false
         }
     }
 
@@ -41,7 +43,7 @@ class SimpleCrawler extends React.Component {
             scrapDynamically: this.state.crawlDynamically,
             scrapAllIfNoScenario: this.state.scrapAllIfNoScenario,
             scenarios: this.state.scenarios.valueSeq().toArray()
-        }))
+        }));
 
         fetch(requestUrl, {
             method: 'POST',
@@ -97,6 +99,7 @@ class SimpleCrawler extends React.Component {
                     onChange={this.handleScenarioChange}
                     getScenariosNames={this.getScenariosNames}
                     isDynamicCrawling={this.state.crawlDynamically}
+                    isTopicalCrawling={this.state.isTopicalCrawling}
                 />
             ],
             scrapingScenariosCounter: key + 1
@@ -128,6 +131,12 @@ class SimpleCrawler extends React.Component {
         this.setState({
             scrapAllIfNoScenario : (e.currentTarget.value === "true")
         })
+    };
+
+    handleIsTopicalCrawlingRadio = (e) => {
+        this.setState(prevState => ({
+            isTopicalCrawling: !prevState.isTopicalCrawling
+        }))
     };
 
     crawType = () => {
@@ -178,6 +187,19 @@ class SimpleCrawler extends React.Component {
 
                                 />
 
+                                <FormControlLabel
+                                    className={classes.checkbox}
+                                    control={
+                                        <Checkbox
+                                            checked={this.state.isTopicalCrawling}
+                                            onChange={this.handleIsTopicalCrawlingRadio}
+                                            value="checkedB"
+                                            color="primary"
+                                        />
+                                    }
+                                    label="is Topical crawling"
+                                />
+
                                 <FormLabel
                                     component="legend"
                                     className={classes.group}
@@ -196,6 +218,7 @@ class SimpleCrawler extends React.Component {
                                     <FormControlLabel value="false" control={<Radio color="primary"/>}
                                                       label="Async"/>
                                 </RadioGroup>
+
                                 <FormLabel
                                     component="legend"
                                     className={classes.group}

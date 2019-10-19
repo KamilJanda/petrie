@@ -36,6 +36,8 @@ class HtmlParsingService(urlRegexMatchingService: UrlRegexMatchingService) {
     scenario match {
       case Right(scenario) if scenario.scrapingConfiguration.elementsToFetchUrlsFrom.nonEmpty =>
         fetchBySelector(document, scenario)
+      case Right(scenario) if scenario.scrapingConfiguration.topicsToFetchUrlsFrom.nonEmpty =>
+        fetchByTopic(document, scenario)
       case Left(DontScrap) =>
         Seq()
       case _ =>
@@ -56,6 +58,14 @@ class HtmlParsingService(urlRegexMatchingService: UrlRegexMatchingService) {
     (for {
       url <- elements.iterator().asScala
     } yield url.absUrl("href")).toSeq
+  }
+
+  private def fetchByTopic(document: Document, scenario: ScrapingScenario): Seq[String] = {
+    for {
+      words <- scenario.scrapingConfiguration.topicsToFetchUrlsFrom.map(_.topicSelector)
+      elements = document.select(s"a:contains($words)")
+      url <- elementsToUrl(elements)
+    } yield url
   }
 }
 
