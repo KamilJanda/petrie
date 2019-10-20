@@ -19,7 +19,7 @@ class ScrapingScenario(
 )
 
 final case class PreScrapingConfiguration(
-  elementsToClick: List[SelectorConfiguration]
+  preScrapingConfigurationElements: List[PreScrapingConfigurationElement]
 )
 
 object PreScrapingConfiguration {

@@ -1,6 +1,6 @@
 package agh.petrie.core.viewconverters
 
-import agh.petrie.core.model.view.{ConfigurationView, ScrapingScenarioView, SelectorConfigurationView}
+import agh.petrie.core.model.view.{ConfigurationView, ElementToClickView, PreScrapingConfigurationElementView, ScrapingScenarioView, ScrollToElementView, SelectorConfigurationView, WaitTimeoutView, WriteToElementView}
 import agh.petrie.scraping.model.{ScrapingScenario, _}
 import io.scalaland.chimney.dsl._
 import javax.inject.Singleton
@@ -54,7 +54,7 @@ class ConfigurationViewConverter {
       scenarioView.name,
       scenarioView.preScrapingConfiguration
         .into[PreScrapingConfiguration]
-        .withFieldComputed(_.elementsToClick, _.elementsToClick.map(toSelectorConfiguration))
+        .withFieldComputed(_.preScrapingConfigurationElements, _.preScrapingConfigurationElementsViews.map(toPreScrapingConfig))
         .transform,
       scenarioView.scrapingConfiguration
         .into[ScrapingConfiguration]
@@ -67,6 +67,18 @@ class ConfigurationViewConverter {
         .transform,
       None
     )
+  }
+
+  private def toPreScrapingConfig(preScrapingConfigurationElementView: PreScrapingConfigurationElementView): PreScrapingConfigurationElement =
+    preScrapingConfigurationElementView match {
+      case ElementToClickView(selector: SelectorConfigurationView, _) =>
+        ElementToClick(toSelectorConfiguration(selector))
+      case WaitTimeoutView(timeout: Int, _) =>
+        WaitTimeout(timeout)
+      case ScrollToElementView(selector: SelectorConfigurationView, _) =>
+        ScrollToElement(toSelectorConfiguration(selector))
+      case WriteToElementView(selector: SelectorConfigurationView, text: String, _) =>
+        WriteToElement(toSelectorConfiguration(selector), text)
   }
 
   private def toSelectorConfiguration(selectorConfigurationView: SelectorConfigurationView) = {
