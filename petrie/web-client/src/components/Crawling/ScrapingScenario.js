@@ -12,6 +12,7 @@ import { Combobox } from "react-widgets";
 import Box from "@material-ui/core/Box";
 import 'react-widgets/dist/css/react-widgets.css';
 import { scenarioBuilder } from "./Utils/RequestBuilder";
+import WriteIntoFieldConfig from "./WriteIntoFieldConfig";
 
 const { Map } = require('immutable');
 
@@ -56,8 +57,7 @@ const styles = theme => ({
         width: 200,
     },
     buttonGroup: {
-        margin: theme.spacing(1),
-        marginTop: theme.spacing(3),
+        margin: theme.spacing(3)
     },
     checkbox: {
         margin: theme.spacing(1),
@@ -77,6 +77,7 @@ const styles = theme => ({
     },
     configList: {
         padding: theme.spacing(2),
+        paddingTop: theme.spacing(0)
     }
 });
 
@@ -87,9 +88,19 @@ class ScrapingScenario extends Component {
 
         this.state = {
             name: "",
+            preScrapingOrdering: 0,
             elementsToClickView: [],
             elementsToClick: new Map(),
             elementsToClickCounter: 0,
+            elementsToScrollToView: [],
+            elementsToScrollTo: new Map(),
+            elementsToToScrollToCounter: 0,
+            waitTimeoutView: [],
+            waitTimeout: new Map(),
+            waitTimeoutCounter: 0,
+            writeToElementView: [],
+            writeToElement: new Map(),
+            writeToElementCounter: 0,
             urlConfigView: [],
             urlConfiguration: new Map(),
             urlConfigCounter: 0,
@@ -126,6 +137,9 @@ class ScrapingScenario extends Component {
     buildScenario = ({
         name = this.state.name,
         elementsToClick = this.state.elementsToClick,
+        elementsToScrollTo = this.state.elementsToScrollTo,
+        waitTimeout = this.state.waitTimeout,
+        writeToElement = this.state.writeToElement,
         elementsToFetchUrlFromSelectorConfiguration = this.state.elementsToFetchUrlFromSelectorConfiguration,
         elementsToFetchTextFromSelectorConfiguration = this.state.elementsToFetchTextFromSelectorConfiguration,
         urlConfiguration = this.state.urlConfiguration,
@@ -135,7 +149,13 @@ class ScrapingScenario extends Component {
         return {
             "name": name,
             "preScrapingConfiguration": {
-                "elementsToClick": elementsToClick.valueSeq().toArray().map(selector => ({ isXpathSelector: isXpathSelector, selector: selector }))
+                "preScrapingConfigurationElementsViews": this.preparePreScrapingConfiguration(
+                    isXpathSelector,
+                    elementsToClick,
+                    elementsToScrollTo,
+                    waitTimeout,
+                    writeToElement
+                )
             },
             "scrapingConfiguration": {
                 "elementsToFetchUrlsFrom": elementsToFetchUrlFromSelectorConfiguration.valueSeq().toArray().map(selector => ({ isXpathSelector: isXpathSelector, selector: selector })),
@@ -147,6 +167,28 @@ class ScrapingScenario extends Component {
             "isRootScenario": isRootScenario
         }
     };
+
+    preparePreScrapingConfiguration = (
+        isXpathSelector,
+        elementsToClick,
+        elementsToScrollTo,
+        waitTimeout,
+        writeToElement
+    ) => {
+        const toClick =
+            elementsToClick.valueSeq().toArray().map(el => (
+                {"selector": { isXpathSelector: isXpathSelector, selector: el.selector }, "actionType": "ElementToClickView", ord: el.ord}
+            )) || [];
+        const toScroll = elementsToScrollTo.valueSeq().toArray().map(el => (
+                {"selector": { isXpathSelector: isXpathSelector, selector: el.selector }, "actionType": "ScrollToElementView", ord: el.ord}
+            )) || [];
+        const timeouts = waitTimeout.valueSeq().toArray().map(el => ({ timeout: parseInt(el.timeout),  "actionType": "WaitTimeoutView", ord: el.ord})) || [];
+        const toWriteTo = writeToElement.valueSeq().toArray().map(el => ({  "selector": { isXpathSelector: isXpathSelector, selector: el.selector }, text: el.text,  "actionType": "WriteToElementView", ord: el.ord})) || [];
+        const values = toClick.concat(toScroll, timeouts, toWriteTo);
+        const sorted = values.sort((el1, el2) => el1.ord - el2.ord);
+        sorted.forEach(el => delete el.ord);
+        return sorted;
+    }
 
     addUrlConfig = () => {
         const key = this.state.urlConfigCounter;
@@ -163,6 +205,7 @@ class ScrapingScenario extends Component {
         this.setState(prevState => ({
             urlConfigView: [...prevState.urlConfigView,
             <Config
+                label={"regex"}
                 key={key}
                 id={key}
                 type="url"
@@ -202,6 +245,7 @@ class ScrapingScenario extends Component {
         this.setState(prevState => ({
             elementsToFetchUrlFromSelectorConfigView: [...prevState.elementsToFetchUrlFromSelectorConfigView,
             <Config
+                label={"selector"}
                 key={key}
                 id={key}
                 type="selector"
@@ -241,6 +285,7 @@ class ScrapingScenario extends Component {
         this.setState(prevState => ({
             elementsToFetchTextFromSelectorConfigView: [...prevState.elementsToFetchTextFromSelectorConfigView,
                 <Config
+                    label={"selector"}
                     key={key}
                     id={key}
                     type="selector"
@@ -268,9 +313,11 @@ class ScrapingScenario extends Component {
     addElementToClick = () => {
         const key = this.state.elementsToClickCounter;
 
+        const ord = this.state.preScrapingOrdering;
+
         const update = (itemId, elementToClick) => {
 
-            const updatedElementsToClick = this.state.elementsToClick.set(itemId, elementToClick);
+            const updatedElementsToClick = this.state.elementsToClick.set(itemId, {selector: elementToClick, ord: ord});
 
             this.setState({ elementsToClick: updatedElementsToClick });
 
@@ -280,6 +327,7 @@ class ScrapingScenario extends Component {
         this.setState(prevState => ({
             elementsToClickView: [...prevState.elementsToClickView,
             <Config
+                label={"selector"}
                 key={key}
                 id={key}
                 type="elementsToClick"
@@ -288,7 +336,8 @@ class ScrapingScenario extends Component {
                 update={update}
             />
             ],
-            elementsToClickCounter: key + 1
+            elementsToClickCounter: key + 1,
+            preScrapingOrdering: ord + 1
         }));
     };
 
@@ -303,6 +352,135 @@ class ScrapingScenario extends Component {
 
         this.props.onChange(this.props.id, this.buildScenario({ elementsToClick: updatedElementsToClick }))
     };
+
+    addElementToScrollTo = () => {
+        const key = this.state.elementsToToScrollToCounter;
+
+        const ord = this.state.preScrapingOrdering;
+
+        const update = (itemId, elementToScrollTo) => {
+
+            const updatedElementsToScrollTo = this.state.elementsToScrollTo.set(itemId, {selector: elementToScrollTo, ord: ord});
+
+            this.setState({ elementsToScrollTo: updatedElementsToScrollTo });
+
+            this.props.onChange(this.props.id, this.buildScenario({ elementsToScrollTo: updatedElementsToScrollTo }))
+        };
+
+        this.setState(prevState => ({
+            elementsToScrollToView: [...prevState.elementsToScrollToView,
+                <Config
+                    label={"selector"}
+                    key={key}
+                    id={key}
+                    type="elementsToScrollTo"
+                    configTitle="Element to scroll to"
+                    close={this.deleteElementToScrollTo}
+                    update={update}
+                />
+            ],
+            elementsToToScrollToCounter: key + 1,
+            preScrapingOrdering: ord + 1
+        }));
+    };
+
+    deleteElementToScrollTo = (itemId) => {
+        const updatedElementsToScrollToView = this.state.elementsToScrollToView.filter(el => el.key != itemId);
+        const updatedElementsToScrollTo = this.state.elementsToScrollTo.delete(itemId);
+
+        this.setState({
+            elementsToScrollToView: updatedElementsToScrollToView,
+            elementsToScrollTo: updatedElementsToScrollTo
+        });
+
+        this.props.onChange(this.props.id, this.buildScenario({ elementsToScrollTo: updatedElementsToScrollTo }))
+    };
+
+    addWaitTimeout = () => {
+        const ord = this.state.preScrapingOrdering;
+
+        const key = this.state.waitTimeoutCounter;
+
+        const update = (itemId, waitTimeout) => {
+
+            const updatedWaitTimeout = this.state.waitTimeout.set(itemId, { timeout: waitTimeout, ord: ord });
+
+            this.setState({ waitTimeout: updatedWaitTimeout });
+
+            this.props.onChange(this.props.id, this.buildScenario({ waitTimeout: updatedWaitTimeout }))
+        };
+
+        this.setState(prevState => ({
+            waitTimeoutView: [...prevState.waitTimeoutView,
+                <Config
+                    label={"timeout"}
+                    key={key}
+                    id={key}
+                    type="waitTimeout"
+                    configTitle="Wait Timeout"
+                    close={this.deleteWaitTimeout}
+                    update={update}
+                />
+            ],
+            waitTimeoutCounter: key + 1,
+            preScrapingOrdering: ord + 1
+        }));
+    };
+
+    deleteWaitTimeout = (itemId) => {
+        const updatedWaitTimeoutView = this.state.waitTimeoutView.filter(el => el.key != itemId);
+        const updatedWaitTimeout = this.state.waitTimeout.delete(itemId);
+
+        this.setState({
+            waitTimeoutView: updatedWaitTimeoutView,
+            waitTimeout: updatedWaitTimeout
+        });
+
+        this.props.onChange(this.props.id, this.buildScenario({ waitTimeout: updatedWaitTimeout }))
+    };
+
+    addWriteToElement = () => {
+        const ord = this.state.preScrapingOrdering;
+
+        const key = this.state.writeToElementCounter;
+
+        const update = (itemId, writeToElement) => {
+
+            const updatedWriteToElement = this.state.writeToElement.set(itemId, {ord: ord, ...writeToElement});
+
+            this.setState({ writeToElement: updatedWriteToElement });
+
+            this.props.onChange(this.props.id, this.buildScenario({ writeToElement: updatedWriteToElement }))
+        };
+
+        this.setState(prevState => ({
+            writeToElementView: [...prevState.writeToElementView,
+                <WriteIntoFieldConfig
+                    key={key}
+                    id={key}
+                    type="writeInto"
+                    configTitle="Write Into Element"
+                    close={this.deleteWriteToElement}
+                    update={update}
+                />
+            ],
+            writeToElementCounter: key + 1,
+            preScrapingOrdering: ord + 1
+        }));
+    };
+
+    deleteWriteToElement = (itemId) => {
+        const updatedWaitTimeoutView = this.state.waitTimeoutView.filter(el => el.key != itemId);
+        const updatedWaitTimeout = this.state.waitTimeout.delete(itemId);
+
+        this.setState({
+            waitTimeoutView: updatedWaitTimeoutView,
+            waitTimeout: updatedWaitTimeout
+        });
+
+        this.props.onChange(this.props.id, this.buildScenario({ waitTimeout: updatedWaitTimeout }))
+    };
+
 
     getScenariosNames = () => {
         return this.props.getScenariosNames();
@@ -361,6 +539,7 @@ class ScrapingScenario extends Component {
                             />
                         </Box>
 
+                        <div> PreScraping Options: </div>
                         <ButtonGroup
                             variant="contained"
                             className={classes.buttonGroup}
@@ -369,8 +548,32 @@ class ScrapingScenario extends Component {
                                 className={this.props.isDynamicCrawling ? '' : classes.notVisible}
                                 onClick={this.addElementToClick}
                             >
-                                Add PreScraping Config
+                                Add Element to click Config
                             </Button>
+                            <Button
+                                className={this.props.isDynamicCrawling ? '' : classes.notVisible}
+                                onClick={this.addElementToScrollTo}
+                            >
+                                Add Element to scroll to Config
+                            </Button>
+                            <Button
+                                className={this.props.isDynamicCrawling ? '' : classes.notVisible}
+                                onClick={this.addWaitTimeout}
+                            >
+                                Add Wait Timeout Config
+                            </Button>
+                            <Button
+                                className={this.props.isDynamicCrawling ? '' : classes.notVisible}
+                                onClick={this.addWriteToElement}
+                            >
+                                Add Write To Element Config
+                            </Button>
+                        </ButtonGroup>
+                        <div> Scraping Options: </div>
+                        <ButtonGroup
+                            variant="contained"
+                            className={classes.buttonGroup}
+                        >
                             <Button
                                 onClick={this.addSelectorConfig}
                             >
@@ -381,10 +584,16 @@ class ScrapingScenario extends Component {
                             >
                                 Add Text Scraping Config
                             </Button>
+                        </ButtonGroup>
+                        <div> PostScraping Options: </div>
+                        <ButtonGroup
+                            variant="contained"
+                            className={classes.buttonGroup}
+                        >
                             <Button
                                 onClick={this.addUrlConfig}
                             >
-                                Add PostScraping Config
+                                Add Url Match Regex Config
                             </Button>
                         </ButtonGroup>
 
@@ -392,8 +601,11 @@ class ScrapingScenario extends Component {
 
                     <div className={classes.configList}>
                         <ol className={(this.props.isDynamicCrawling ? '' : classes.notVisible)}>
-                            {this.titleIfNonEmpty("PreScraping Configuration: ", this.state.elementsToClickView)}
+                            {this.titleIfNonEmpty("PreScraping Configuration: ", this.state.elementsToClickView + this.state.elementsToScrollToView + this.state.waitTimeoutView)}
                             {this.state.elementsToClickView}
+                            {this.state.elementsToScrollToView}
+                            {this.state.waitTimeoutView}
+                            {this.state.writeToElementView}
                         </ol>
                         <ol>
                             {this.titleIfNonEmpty("Scraping Configuration: ", this.state.elementsToFetchUrlFromSelectorConfigView)}

@@ -8,6 +8,6 @@ import io.scalaland.chimney.dsl._
 @Singleton
 class FetchedUrlsViewConverter {
 
-  def toView(fetchedUrls: FetchedData) =
-    fetchedUrls.transformInto[FetchedDataView]
+  def toView(fetchedData: FetchedData) =
+    fetchedData.transformInto[FetchedDataView]
 }

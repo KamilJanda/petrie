@@ -22,7 +22,7 @@ export function buildRequestBody(
 export function scenarioBuilder(
     {
         name = "",
-        elementsToClick = [],
+        preScrapingConfigurationElementsViews = [],
         elementsToFetchUrlsFrom = [],
         urlConfiguration = [],
         isRootScenario = true
@@ -31,7 +31,7 @@ export function scenarioBuilder(
     return {
         "name": name,
         "preScrapingConfiguration": {
-            "elementsToClick": elementsToClick
+            "preScrapingConfigurationElementsViews": preScrapingConfigurationElementsViews
         },
         "scrapingConfiguration": {
             "elementsToFetchUrlsFrom": elementsToFetchUrlsFrom
