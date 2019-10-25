@@ -20,3 +20,4 @@ addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.0.0")
 
 addSbtPlugin("se.marcuslonnberg" % "sbt-docker" % "1.4.1")
 addSbtPlugin("com.tapad" % "sbt-docker-compose" % "1.0.34")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.9.0-PLAY2.7")

@@ -28,13 +28,16 @@ lazy val core = playScalaModule("core")
 lazy val scraping = module("scraping")
 
 lazy val petrie = (project in file("."))
-  .enablePlugins(PlayScala)
+  .enablePlugins(PlayScala, SwaggerPlugin)
   .aggregate(core, scraping, common)
   .dependsOn(core, scraping, common)
   .settings(
     libraryDependencies ++= Dependencies.all,
-    watchSources ++= (baseDirectory.value / "web-client/public/ui" ** "*").get
+    watchSources ++= (baseDirectory.value / "web-client/public/ui" ** "*").get,
+    swaggerDomainNameSpaces := Seq("petrie", "agh.petrie.core")
   )
+
+
 
 // Automatic database migration available in testing
 fork in Test := true
