@@ -13,7 +13,8 @@ object Dependencies {
     "org.jsoup" % "jsoup" % "1.8.3",
     "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.1" % Test,
     "io.scalaland" %% "chimney" % "0.3.1",
-    "us.codecraft" % "xsoup" % "0.3.1"
+    "us.codecraft" % "xsoup" % "0.3.1",
+    "org.webjars" % "swagger-ui" % "2.2.0"
   )
 
   val time = Seq(
@@ -28,9 +29,9 @@ object Dependencies {
   )
 
   val play = Seq(
-    "com.typesafe.play" %% "play-ahc-ws" % "2.7.0" % Test,
-    "com.typesafe.play" %% "play" % "2.7.0",
-    "com.typesafe.play" %% "play-json" % "2.7.0",
+    "com.typesafe.play" %% "play-ahc-ws" % "2.7.1" % Test,
+    "com.typesafe.play" %% "play" % "2.7.1",
+    "com.typesafe.play" %% "play-json" % "2.7.1",
     "com.typesafe.slick" %% "slick" % "3.3.0" exclude("com.zaxxer", "HikariCP-java6"),
     "com.typesafe.play" %% "play-slick-evolutions" % "3.0.0" exclude("com.zaxxer", "HikariCP-java6")
   )
