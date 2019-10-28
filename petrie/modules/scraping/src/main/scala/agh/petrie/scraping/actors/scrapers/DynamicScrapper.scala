@@ -34,7 +34,7 @@ class DynamicScrapper(
       fetchResult.urls.foreach { url =>
         context.parent ! ScrapFromUrl(url, depth - 1, nextScenario)
       }
-      context.parent ! CheckDone
+      context.parent !  CheckDone(WebsiteData(url, fetchResult.text))
       context.stop(self)
     case WorkStarted =>
       context.system.scheduler.scheduleOnce(timeout second, self, Stop)
