@@ -40,6 +40,10 @@ const styles = theme => ({
     group: {
         margin: theme.spacing(1),
     },
+    checkbox: {
+        margin: theme.spacing(1),
+        marginTop: theme.spacing(4)
+    },
 });
 
 export default styles

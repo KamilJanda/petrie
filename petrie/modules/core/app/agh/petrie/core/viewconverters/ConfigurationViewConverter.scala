@@ -1,6 +1,6 @@
 package agh.petrie.core.viewconverters
 
-import agh.petrie.core.model.view.{ConfigurationView, ElementToClickView, PreScrapingConfigurationElementView, ScrapingScenarioView, ScrollToElementView, SelectorConfigurationView, WaitTimeoutView, WriteToElementView}
+import agh.petrie.core.model.view.{ConfigurationView, ElementToClickView, PreScrapingConfigurationElementView, ScrapingScenarioView, ScrapingTopicView, ScrollToElementView, SelectorConfigurationView, WaitTimeoutView, WriteToElementView}
 import agh.petrie.scraping.model.{ScrapingScenario, _}
 import io.scalaland.chimney.dsl._
 import javax.inject.Singleton
@@ -60,6 +60,7 @@ class ConfigurationViewConverter {
         .into[ScrapingConfiguration]
         .withFieldComputed(_.elementsToFetchUrlsFrom, _.elementsToFetchUrlsFrom.map(toSelectorConfiguration))
         .withFieldComputed(_.elementsToScrapContentFrom, _.elementsToScrapContentFrom.map(toSelectorConfiguration))
+        .withFieldComputed(_.topicsToFetchUrlsFrom, _.topicsToFetchUrlsFrom.map(toScrapingTopic))
         .transform,
       scenarioView.postScrapingConfiguration
         .into[PostScrapingConfiguration]
@@ -88,4 +89,9 @@ class ConfigurationViewConverter {
       .transform
   }
 
+  private def toScrapingTopic(scrapingTopicView: ScrapingTopicView): ScrapingTopic = {
+    scrapingTopicView.into[ScrapingTopic]
+      .withFieldComputed(_.topicType, view => if(view.topicType == "keyWord") KeyWord else Sentence)
+      .transform
+  }
 }

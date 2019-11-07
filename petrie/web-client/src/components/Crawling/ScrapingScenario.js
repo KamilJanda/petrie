@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { withStyles } from "@material-ui/core";
+import React, {Component} from 'react';
+import {withStyles} from "@material-ui/core";
 import DeleteIcon from '@material-ui/icons/Delete';
 import Button from "@material-ui/core/Button";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
@@ -8,13 +8,13 @@ import CardContent from "@material-ui/core/CardContent";
 import Config from "./Config";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Checkbox from "@material-ui/core/Checkbox";
-import { Combobox } from "react-widgets";
+import {Combobox} from "react-widgets";
 import Box from "@material-ui/core/Box";
 import 'react-widgets/dist/css/react-widgets.css';
 import { scenarioBuilder } from "./Utils/RequestBuilder";
 import WriteIntoFieldConfig from "./WriteIntoFieldConfig";
 
-const { Map } = require('immutable');
+const {Map} = require('immutable');
 
 const styles = theme => ({
     root: {
@@ -110,6 +110,9 @@ class ScrapingScenario extends Component {
             elementsToFetchTextFromSelectorConfigView: [],
             elementsToFetchTextFromSelectorConfiguration: new Map(),
             elementsToFetchTextFromSelectorConfigCounter: 0,
+            topicsConfigurationView: [],
+            topicsConfiguration: new Map(),
+            topicsConfigurationCounter: 0,
             isRootScenario: true,
             isDynamicCrawling: props.isDynamicCrawling,
             isXpathSelector: false
@@ -118,20 +121,20 @@ class ScrapingScenario extends Component {
 
     handleNameChange = (event) => {
         const newName = event.target.value;
-        this.setState({ name: newName });
-        this.props.onChange(this.props.id, this.buildScenario({ name: newName }))
+        this.setState({name: newName});
+        this.props.onChange(this.props.id, this.buildScenario({name: newName}))
     };
 
     handleChangeRootScenario = () => {
         const newIsRootScenario = !this.state.isRootScenario;
-        this.setState({ isRootScenario: newIsRootScenario });
-        this.props.onChange(this.props.id, this.buildScenario({ isRootScenario: newIsRootScenario }))
+        this.setState({isRootScenario: newIsRootScenario});
+        this.props.onChange(this.props.id, this.buildScenario({isRootScenario: newIsRootScenario}))
     };
 
     handleChangeIsXpathSelector = () => {
         const newIsXpathSelector = !this.state.isXpathSelector;
-        this.setState({ isXpathSelector: newIsXpathSelector });
-        this.props.onChange(this.props.id, this.buildScenario({ isXpathSelector: newIsXpathSelector }))
+        this.setState({isXpathSelector: newIsXpathSelector});
+        this.props.onChange(this.props.id, this.buildScenario({isXpathSelector: newIsXpathSelector}))
     };
 
     buildScenario = ({
@@ -143,7 +146,8 @@ class ScrapingScenario extends Component {
         elementsToFetchUrlFromSelectorConfiguration = this.state.elementsToFetchUrlFromSelectorConfiguration,
         elementsToFetchTextFromSelectorConfiguration = this.state.elementsToFetchTextFromSelectorConfiguration,
         urlConfiguration = this.state.urlConfiguration,
-        isRootScenario = this.state.isRootScenario,
+                         topics = this.state.topicsConfiguration,
+                         isRootScenario = this.state.isRootScenario,
         isXpathSelector = this.state.isXpathSelector
     } = {}) => {
         return {
@@ -158,11 +162,21 @@ class ScrapingScenario extends Component {
                 )
             },
             "scrapingConfiguration": {
-                "elementsToFetchUrlsFrom": elementsToFetchUrlFromSelectorConfiguration.valueSeq().toArray().map(selector => ({ isXpathSelector: isXpathSelector, selector: selector })),
-                "elementsToScrapContentFrom": elementsToFetchTextFromSelectorConfiguration.valueSeq().toArray().map(selector => ({ isXpathSelector: isXpathSelector, selector: selector }))
+                "elementsToFetchUrlsFrom": elementsToFetchUrlFromSelectorConfiguration.valueSeq().toArray().map(selector => ({
+                    isXpathSelector: isXpathSelector,
+                    selector: selector
+                })),
+                "elementsToScrapContentFrom": elementsToFetchTextFromSelectorConfiguration.valueSeq().toArray().map(selector => ({
+                    isXpathSelector: isXpathSelector,
+                    selector: selector
+                })),
+                "topicsToFetchUrlsFrom": topics.valueSeq().toArray().map(topicSelector => ({
+                    topicType: "keyWord",
+                    topicSelector: topicSelector
+                }))
             },
             "postScrapingConfiguration": {
-                "urlConfiguration": urlConfiguration.valueSeq().toArray().map(regex => ({ regex: regex }))
+                "urlConfiguration": urlConfiguration.valueSeq().toArray().map(regex => ({regex: regex}))
             },
             "isRootScenario": isRootScenario
         }
@@ -188,7 +202,7 @@ class ScrapingScenario extends Component {
         const sorted = values.sort((el1, el2) => el1.ord - el2.ord);
         sorted.forEach(el => delete el.ord);
         return sorted;
-    }
+    };
 
     addUrlConfig = () => {
         const key = this.state.urlConfigCounter;
@@ -197,9 +211,9 @@ class ScrapingScenario extends Component {
 
             const updatedUrlConfiguration = this.state.urlConfiguration.set(itemId, urlConfiguration);
 
-            this.setState({ urlConfiguration: updatedUrlConfiguration });
+            this.setState({urlConfiguration: updatedUrlConfiguration});
 
-            this.props.onChange(this.props.id, this.buildScenario({ urlConfiguration: updatedUrlConfiguration }))
+            this.props.onChange(this.props.id, this.buildScenario({urlConfiguration: updatedUrlConfiguration}))
         };
 
         this.setState(prevState => ({
@@ -227,7 +241,7 @@ class ScrapingScenario extends Component {
             urlConfiguration: updatedUrlConfiguration
         });
 
-        this.props.onChange(this.props.id, this.buildScenario({ urlConfiguration: updatedUrlConfiguration }))
+        this.props.onChange(this.props.id, this.buildScenario({urlConfiguration: updatedUrlConfiguration}))
     };
 
     addSelectorConfig = () => {
@@ -237,9 +251,9 @@ class ScrapingScenario extends Component {
 
             const updatedSelectorConfiguration = this.state.elementsToFetchUrlFromSelectorConfiguration.set(itemId, elementsToFetchUrlFromSelectorConfiguration);
 
-            this.setState({ elementsToFetchUrlFromSelectorConfiguration: updatedSelectorConfiguration });
+            this.setState({elementsToFetchUrlFromSelectorConfiguration: updatedSelectorConfiguration});
 
-            this.props.onChange(this.props.id, this.buildScenario({ elementsToFetchUrlFromSelectorConfiguration: updatedSelectorConfiguration }))
+            this.props.onChange(this.props.id, this.buildScenario({elementsToFetchUrlFromSelectorConfiguration: updatedSelectorConfiguration}))
         };
 
         this.setState(prevState => ({
@@ -267,7 +281,7 @@ class ScrapingScenario extends Component {
             elementsToFetchUrlFromSelectorConfiguration: updatedSelectorConfiguration
         });
 
-        this.props.onChange(this.props.id, this.buildScenario({ elementsToFetchUrlFromSelectorConfiguration: updatedSelectorConfiguration }))
+        this.props.onChange(this.props.id, this.buildScenario({elementsToFetchUrlFromSelectorConfiguration: updatedSelectorConfiguration}))
     };
 
     addTextSelectorConfig = () => {
@@ -277,9 +291,9 @@ class ScrapingScenario extends Component {
 
             const updatedSelectorConfiguration = this.state.elementsToFetchTextFromSelectorConfiguration.set(itemId, elementsToFetchTextFromSelectorConfiguration);
 
-            this.setState({ elementsToFetchTextFromSelectorConfiguration: updatedSelectorConfiguration });
+            this.setState({elementsToFetchTextFromSelectorConfiguration: updatedSelectorConfiguration});
 
-            this.props.onChange(this.props.id, this.buildScenario({ elementsToFetchTextFromSelectorConfiguration: updatedSelectorConfiguration }))
+            this.props.onChange(this.props.id, this.buildScenario({elementsToFetchTextFromSelectorConfiguration: updatedSelectorConfiguration}))
         };
 
         this.setState(prevState => ({
@@ -307,7 +321,7 @@ class ScrapingScenario extends Component {
             elementsToFetchTextFromSelectorConfiguration: updatedSelectorConfiguration
         });
 
-        this.props.onChange(this.props.id, this.buildScenario({ elementsToFetchTextFromSelectorConfiguration: updatedSelectorConfiguration }))
+        this.props.onChange(this.props.id, this.buildScenario({elementsToFetchTextFromSelectorConfiguration: updatedSelectorConfiguration}))
     };
 
     addElementToClick = () => {
@@ -319,9 +333,9 @@ class ScrapingScenario extends Component {
 
             const updatedElementsToClick = this.state.elementsToClick.set(itemId, {selector: elementToClick, ord: ord});
 
-            this.setState({ elementsToClick: updatedElementsToClick });
+            this.setState({elementsToClick: updatedElementsToClick});
 
-            this.props.onChange(this.props.id, this.buildScenario({ elementsToClick: updatedElementsToClick }))
+            this.props.onChange(this.props.id, this.buildScenario({elementsToClick: updatedElementsToClick}))
         };
 
         this.setState(prevState => ({
@@ -350,7 +364,7 @@ class ScrapingScenario extends Component {
             elementsToClick: updatedElementsToClick
         });
 
-        this.props.onChange(this.props.id, this.buildScenario({ elementsToClick: updatedElementsToClick }))
+        this.props.onChange(this.props.id, this.buildScenario({elementsToClick: updatedElementsToClick}))
     };
 
     addElementToScrollTo = () => {
@@ -482,12 +496,51 @@ class ScrapingScenario extends Component {
     };
 
 
+    addTopicsConfig = () => {
+        const key = this.state.topicsConfigurationCounter;
+
+        const update = (itemId, topicsConfiguration) => {
+
+            const updatedTopicsConfiguration = this.state.topicsConfiguration.set(itemId, topicsConfiguration);
+
+            this.setState({topicsConfiguration: updatedTopicsConfiguration});
+
+            this.props.onChange(this.props.id, this.buildScenario({topics: updatedTopicsConfiguration}))
+        };
+
+        this.setState(prevState => ({
+            topicsConfigurationView: [...prevState.topicsConfigurationView,
+                <Config
+                    key={key}
+                    id={key}
+                    type="topics"
+                    configTitle="Topics config"
+                    close={this.deleteTopicsConfig}
+                    update={update}
+                />
+            ],
+            topicsConfigurationCounter: key + 1
+        }));
+    };
+
+    deleteTopicsConfig = (itemId) => {
+        const updatedTopicsConfigView = this.state.topicsConfigurationView.filter(el => el.key != itemId);
+        const updatedTopicsConfiguration = this.state.topicsConfiguration.delete(itemId);
+
+        this.setState({
+            topicsConfigurationView: updatedTopicsConfigView,
+            topicsConfiguration: updatedTopicsConfiguration
+        });
+
+        this.props.onChange(this.props.id, this.buildScenario({topics: updatedTopicsConfiguration}))
+    };
+
     getScenariosNames = () => {
         return this.props.getScenariosNames();
     };
 
     titleIfNonEmpty(title, array) {
-        const { classes } = this.props;
+        const {classes} = this.props;
         if (array.length > 0) {
             return (<div className={classes.configPartTitle}><h2>{title}</h2></div>)
         } else {
@@ -496,14 +549,14 @@ class ScrapingScenario extends Component {
     }
 
     render() {
-        const { classes } = this.props;
+        const {classes} = this.props;
 
         return (
             <li key={this.props.id} className={classes.noStyle}>
                 <div className={classes.scenario}>
 
                     <DeleteIcon data-id={this.props.id} className={classes.icon}
-                        onClick={() => this.props.close(this.props.id)}
+                                onClick={() => this.props.close(this.props.id)}
                     />
 
                     <CardContent>
@@ -575,14 +628,22 @@ class ScrapingScenario extends Component {
                             className={classes.buttonGroup}
                         >
                             <Button
+                                className={this.props.isTopicalCrawling ? classes.notVisible : ''}
                                 onClick={this.addSelectorConfig}
                             >
                                 Add Url Scraping Config
                             </Button>
                             <Button
+                                className={this.props.isTopicalCrawling ? classes.notVisible : ''}
                                 onClick={this.addTextSelectorConfig}
                             >
                                 Add Text Scraping Config
+                            </Button>
+                            <Button
+                                className={this.props.isTopicalCrawling ? '' : classes.notVisible}
+                                onClick={this.addTopicsConfig}
+                            >
+                                Add Topics Config
                             </Button>
                         </ButtonGroup>
                         <div> PostScraping Options: </div>
@@ -607,10 +668,14 @@ class ScrapingScenario extends Component {
                             {this.state.waitTimeoutView}
                             {this.state.writeToElementView}
                         </ol>
-                        <ol>
+                        <ol className={(this.props.isTopicalCrawling ? classes.notVisible : '')}>
                             {this.titleIfNonEmpty("Scraping Configuration: ", this.state.elementsToFetchUrlFromSelectorConfigView)}
                             {this.state.elementsToFetchUrlFromSelectorConfigView}
                             {this.state.elementsToFetchTextFromSelectorConfigView}
+                        </ol>
+                        <ol className={(this.props.isTopicalCrawling ? '' : classes.notVisible)}>
+                            {this.titleIfNonEmpty("Topical Crawling Configuration: ", this.state.topicsConfigurationView)}
+                            {this.state.topicsConfigurationView}
                         </ol>
                         <ol>
                             {this.titleIfNonEmpty("PostScraping Configuration: ", this.state.urlConfigView)}

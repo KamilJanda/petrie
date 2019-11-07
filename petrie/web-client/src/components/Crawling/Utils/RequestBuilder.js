@@ -25,6 +25,7 @@ export function scenarioBuilder(
         preScrapingConfigurationElementsViews = [],
         elementsToFetchUrlsFrom = [],
         urlConfiguration = [],
+        topics = [],
         isRootScenario = true
     } = {}
 ) {
@@ -38,6 +39,9 @@ export function scenarioBuilder(
         },
         "postScrapingConfiguration": {
             "urlConfiguration": urlConfiguration
+        },
+        "topicalScrapingConfiguration": {
+            "topics": topics
         },
         "isRootScenario": isRootScenario
     }
