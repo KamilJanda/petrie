@@ -1,6 +1,6 @@
 package agh.petrie.core.viewconverters
 
-import agh.petrie.core.model.view.{ConfigurationView, ElementToClickView, PreScrapingConfigurationElementView, ScrapingScenarioView, ScrapingTopicView, ScrollToElementView, SelectorConfigurationView, WaitTimeoutView, WriteToElementView}
+import agh.petrie.core.model.view._
 import agh.petrie.scraping.model.{ScrapingScenario, _}
 import io.scalaland.chimney.dsl._
 import javax.inject.Singleton
@@ -59,7 +59,7 @@ class ConfigurationViewConverter {
       scenarioView.scrapingConfiguration
         .into[ScrapingConfiguration]
         .withFieldComputed(_.elementsToFetchUrlsFrom, _.elementsToFetchUrlsFrom.map(toSelectorConfiguration))
-        .withFieldComputed(_.elementsToScrapContentFrom, _.elementsToScrapContentFrom.map(toSelectorConfiguration))
+        .withFieldComputed(_.elementsToScrapContentFrom, _.elementsToScrapContentFrom.map(toFetchDataSelectorConfiguration))
         .withFieldComputed(_.topicsToFetchUrlsFrom, _.topicsToFetchUrlsFrom.map(toScrapingTopic))
         .transform,
       scenarioView.postScrapingConfiguration
@@ -85,6 +85,13 @@ class ConfigurationViewConverter {
   private def toSelectorConfiguration(selectorConfigurationView: SelectorConfigurationView) = {
     selectorConfigurationView
       .into[SelectorConfiguration]
+      .withFieldComputed(_.selectorType, view => if (view.isXpathSelector) XpathSelector else CssSelector)
+      .transform
+  }
+
+  private def toFetchDataSelectorConfiguration(fetchDataSelectorConfigurationView: FetchDataSelectorConfigurationView) = {
+    fetchDataSelectorConfigurationView
+      .into[FetchDataSelectorConfiguration]
       .withFieldComputed(_.selectorType, view => if (view.isXpathSelector) XpathSelector else CssSelector)
       .transform
   }

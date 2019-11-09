@@ -8,7 +8,8 @@ case class FetchedDataView(
 
 case class WebsiteDataView(
   url: String,
-  content: Option[String]
+  scrapedWithScenario: Option[String],
+  content: Map[String, String]
 )
 
 object FetchedDataView {

@@ -30,15 +30,17 @@ abstract class BaseController(
   }
 
   def checkingUrls(children: Set[ActorRef], websitesData: Set[WebsiteData], responseTo: ActorRef): Receive = {
-    case ScrapFromUrl(url, depth, scenario) if depth >= 0 && !websitesData.map(_.url).contains(url) =>
+    case ScrapFromUrl(url, depth, scenario) if depth >= 0 && resolveIfAlreadyScraped(websitesData, url, scenario) =>
       val worker = scraperResolverService.getScraper(url, depth, scenario, configuration, context)
       context.become(checkingUrls(children + worker, websitesData, responseTo))
 
-    case ScrapFromUrl(url, _, _) =>
-      context.become(checkingUrls(children, websitesData, responseTo))
-
     case CheckDone(websiteData) =>
       onCheckDone(children, websitesData + websiteData, websiteData, responseTo)
+  }
+
+  private def resolveIfAlreadyScraped(websitesData: Set[WebsiteData], url: String, scenario: Option[ScrapingScenario]) = {
+    val maybeScenarioName = scenario.map(_.name)
+    !websitesData.exists(data => data.url == url && data.scrapedWithScenario == maybeScenarioName)
   }
 }
 

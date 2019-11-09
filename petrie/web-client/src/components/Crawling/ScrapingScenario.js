@@ -13,6 +13,7 @@ import Box from "@material-ui/core/Box";
 import 'react-widgets/dist/css/react-widgets.css';
 import { scenarioBuilder } from "./Utils/RequestBuilder";
 import WriteIntoFieldConfig from "./WriteIntoFieldConfig";
+import FetchDataFromConfig from "./FetchDataFromConfig";
 
 const {Map} = require('immutable');
 
@@ -69,6 +70,9 @@ const styles = theme => ({
     },
     notVisible: {
         display: "none"
+    },
+    scenarioConfig:{
+        paddingBottom: theme.spacing(3),
     },
     configPartTitle: {
         margin: theme.spacing(1),
@@ -168,7 +172,7 @@ class ScrapingScenario extends Component {
                 })),
                 "elementsToScrapContentFrom": elementsToFetchTextFromSelectorConfiguration.valueSeq().toArray().map(selector => ({
                     isXpathSelector: isXpathSelector,
-                    selector: selector
+                    ...selector
                 })),
                 "topicsToFetchUrlsFrom": topics.valueSeq().toArray().map(topicSelector => ({
                     topicType: "keyWord",
@@ -298,7 +302,8 @@ class ScrapingScenario extends Component {
 
         this.setState(prevState => ({
             elementsToFetchTextFromSelectorConfigView: [...prevState.elementsToFetchTextFromSelectorConfigView,
-                <Config
+
+                <FetchDataFromConfig
                     label={"selector"}
                     key={key}
                     id={key}
@@ -578,11 +583,11 @@ class ScrapingScenario extends Component {
                                     color="primary"
                                 />
                             }
-                            label="is Root Scenario"
+                            label="start crawling with this scenario (it will be used for base url)"
                         />
 
                         <Box className={classes.combobox}>
-                            <label>Target Scenario </label>
+                            <label>Next used scenario for found urls</label>
                             <Combobox
                                 onChange={this.onTargetChange}
                                 data={this.getScenariosNames()}
@@ -601,27 +606,33 @@ class ScrapingScenario extends Component {
                                 className={this.props.isDynamicCrawling ? '' : classes.notVisible}
                                 onClick={this.addElementToClick}
                             >
-                                Add Element to click Config
+                                click element
                             </Button>
                             <Button
                                 className={this.props.isDynamicCrawling ? '' : classes.notVisible}
                                 onClick={this.addElementToScrollTo}
                             >
-                                Add Element to scroll to Config
+                                scroll to element
                             </Button>
                             <Button
                                 className={this.props.isDynamicCrawling ? '' : classes.notVisible}
                                 onClick={this.addWaitTimeout}
                             >
-                                Add Wait Timeout Config
+                                wait timeout
                             </Button>
                             <Button
                                 className={this.props.isDynamicCrawling ? '' : classes.notVisible}
                                 onClick={this.addWriteToElement}
                             >
-                                Add Write To Element Config
+                                write to element
                             </Button>
                         </ButtonGroup>
+                        <ol className={(this.props.isDynamicCrawling ? classes.scenarioConfig : classes.notVisible)}>
+                            {this.state.elementsToClickView}
+                            {this.state.elementsToScrollToView}
+                            {this.state.waitTimeoutView}
+                            {this.state.writeToElementView}
+                        </ol>
                         <div> Scraping Options: </div>
                         <ButtonGroup
                             variant="contained"
@@ -631,21 +642,28 @@ class ScrapingScenario extends Component {
                                 className={this.props.isTopicalCrawling ? classes.notVisible : ''}
                                 onClick={this.addSelectorConfig}
                             >
-                                Add Url Scraping Config
+                                scrap urls from
                             </Button>
                             <Button
                                 className={this.props.isTopicalCrawling ? classes.notVisible : ''}
                                 onClick={this.addTextSelectorConfig}
                             >
-                                Add Text Scraping Config
+                                scrap text from
                             </Button>
                             <Button
                                 className={this.props.isTopicalCrawling ? '' : classes.notVisible}
                                 onClick={this.addTopicsConfig}
                             >
-                                Add Topics Config
+                                scrap urls by topic
                             </Button>
                         </ButtonGroup>
+                        <ol className={(this.props.isTopicalCrawling ? classes.notVisible : classes.scenarioConfig)}>
+                            {this.state.elementsToFetchUrlFromSelectorConfigView}
+                            {this.state.elementsToFetchTextFromSelectorConfigView}
+                        </ol>
+                        <ol className={(this.props.isTopicalCrawling ? classes.scenarioConfig : classes.notVisible)}>
+                            {this.state.topicsConfigurationView}
+                        </ol>
                         <div> PostScraping Options: </div>
                         <ButtonGroup
                             variant="contained"
@@ -654,35 +672,15 @@ class ScrapingScenario extends Component {
                             <Button
                                 onClick={this.addUrlConfig}
                             >
-                                Add Url Match Regex Config
+                                filter urls not matching
                             </Button>
                         </ButtonGroup>
 
-                    </CardContent>
-
-                    <div className={classes.configList}>
-                        <ol className={(this.props.isDynamicCrawling ? '' : classes.notVisible)}>
-                            {this.titleIfNonEmpty("PreScraping Configuration: ", this.state.elementsToClickView + this.state.elementsToScrollToView + this.state.waitTimeoutView)}
-                            {this.state.elementsToClickView}
-                            {this.state.elementsToScrollToView}
-                            {this.state.waitTimeoutView}
-                            {this.state.writeToElementView}
-                        </ol>
-                        <ol className={(this.props.isTopicalCrawling ? classes.notVisible : '')}>
-                            {this.titleIfNonEmpty("Scraping Configuration: ", this.state.elementsToFetchUrlFromSelectorConfigView)}
-                            {this.state.elementsToFetchUrlFromSelectorConfigView}
-                            {this.state.elementsToFetchTextFromSelectorConfigView}
-                        </ol>
-                        <ol className={(this.props.isTopicalCrawling ? '' : classes.notVisible)}>
-                            {this.titleIfNonEmpty("Topical Crawling Configuration: ", this.state.topicsConfigurationView)}
-                            {this.state.topicsConfigurationView}
-                        </ol>
                         <ol>
-                            {this.titleIfNonEmpty("PostScraping Configuration: ", this.state.urlConfigView)}
                             {this.state.urlConfigView}
                         </ol>
-                    </div>
 
+                    </CardContent>
                 </div>
             </li>
         );

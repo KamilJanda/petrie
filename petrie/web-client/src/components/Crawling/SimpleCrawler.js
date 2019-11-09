@@ -176,7 +176,7 @@ class SimpleCrawler extends React.Component {
 
                                 <TextField
                                     id="depth"
-                                    label="Max request depth"
+                                    label="Max depth of crawling jumps via urls"
                                     className={classes.textField}
                                     margin="normal"
                                     type="number"
@@ -185,19 +185,6 @@ class SimpleCrawler extends React.Component {
                                         shrink: true,
                                     }}
 
-                                />
-
-                                <FormControlLabel
-                                    className={classes.checkbox}
-                                    control={
-                                        <Checkbox
-                                            checked={this.state.isTopicalCrawling}
-                                            onChange={this.handleIsTopicalCrawlingRadio}
-                                            value="checkedB"
-                                            color="primary"
-                                        />
-                                    }
-                                    label="is Topical crawling"
                                 />
 
                                 <FormLabel
@@ -210,13 +197,32 @@ class SimpleCrawler extends React.Component {
                                     aria-label="Crawling Type"
                                     name="Crawling Type"
                                     className={classes.group}
+                                    value={this.state.isTopicalCrawling.toString()}
+                                    onChange={this.handleIsTopicalCrawlingRadio}
+                                >
+                                    <FormControlLabel value="true" control={<Radio color="primary"/>}
+                                                      label="Crawl data using topics"/>
+                                    <FormControlLabel value="false" control={<Radio color="primary"/>}
+                                                      label="Crawl data using selectors"/>
+                                </RadioGroup>
+
+                                <FormLabel
+                                    component="legend"
+                                    className={classes.group}
+                                >
+                                    Website Type
+                                </FormLabel>
+                                <RadioGroup
+                                    aria-label="Crawling Type"
+                                    name="Crawling Type"
+                                    className={classes.group}
                                     value={this.state.crawlDynamically.toString()}
                                     onChange={this.handleCrawlingTypeRadio}
                                 >
                                     <FormControlLabel value="true" control={<Radio color="primary"/>}
-                                                      label="Dynamic"/>
+                                                      label="Dynamic and static websites"/>
                                     <FormControlLabel value="false" control={<Radio color="primary"/>}
-                                                      label="Async"/>
+                                                      label="Only static websites"/>
                                 </RadioGroup>
 
                                 <FormLabel
@@ -233,37 +239,11 @@ class SimpleCrawler extends React.Component {
                                     onChange={this.handleCrawlingWhenNoScenarioRadio}
                                 >
                                     <FormControlLabel value="true" control={<Radio color="primary"/>}
-                                                      label="Scrap all"/>
+                                                      label="Scrap all data if no scenario defined"/>
                                     <FormControlLabel value="false" control={<Radio color="primary"/>}
-                                                      label="Scrap none"/>
+                                                      label="Don't scrap data if scenario not defined"/>
                                 </RadioGroup>
 
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    className={classes.button}
-                                    onClick={this.sendRequest}
-                                >
-                                    Crawl data {this.crawType()}!
-                                    <Icon className={classes.rightIcon}>send</Icon>
-                                </Button>
-
-                                <div>
-                                    <TextField
-                                        id="response"
-                                        label="Response"
-                                        multiline
-                                        rows="6"
-                                        fullWidth
-                                        value={this.state.response}
-                                        className={classes.textField}
-                                        margin="normal"
-                                        variant="outlined"
-                                        InputProps={{
-                                            readOnly: true,
-                                        }}
-                                    />
-                                </div>
 
                                 <ButtonGroup
                                     variant="contained"
@@ -282,6 +262,33 @@ class SimpleCrawler extends React.Component {
                                     </ol>
                                 </div>
                             </CardContent>
+
+                            <div>
+                                <TextField
+                                    id="response"
+                                    label="Response"
+                                    multiline
+                                    rows="6"
+                                    value={this.state.response}
+                                    className={classes.textField}
+                                    margin="normal"
+                                    variant="outlined"
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                />
+                            </div>
+
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                className={classes.button}
+                                onClick={this.sendRequest}
+                            >
+                                Crawl data {this.crawType()}!
+                                <Icon className={classes.rightIcon}>send</Icon>
+                            </Button>
+
                         </Card>
                     </Grid>
                 </Grid>

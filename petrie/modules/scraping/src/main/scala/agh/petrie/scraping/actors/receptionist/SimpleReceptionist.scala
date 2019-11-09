@@ -51,7 +51,8 @@ object SimpleReceptionist {
 
   case class WebsiteData(
     url: String,
-    content: Option[String]
+    scrapedWithScenario: Option[String],
+    content: Map[String, String]
   )
 
   private case class Job(client: ActorRef, configuration: Configuration, action: StartScraping)
