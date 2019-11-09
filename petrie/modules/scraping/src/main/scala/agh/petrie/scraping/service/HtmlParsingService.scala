@@ -12,7 +12,7 @@ import scala.util.matching.Regex
 
 class HtmlParsingService(urlRegexMatchingService: UrlRegexMatchingService) {
 
-  def fetchContent(html: Html, scenario: Either[FallbackScenario, ScrapingScenario]): WebsiteContent = {
+  def fetchContent(html: Html, scenario: Either[FallbackScenario, ScrapingScenario], isTestScraping: Boolean): WebsiteContent = {
     val document = Jsoup.parse(html.body)
     val absUrls  = fetchUrls(document, scenario)
     val urlRegex: Seq[Regex] =
@@ -21,7 +21,11 @@ class HtmlParsingService(urlRegexMatchingService: UrlRegexMatchingService) {
       .filter(_ != "")
       .filter(urlRegexMatchingService.matchRegex(urlRegex))
     val content = scenario.toOption.map(fetchContent(document, _)).getOrElse(Map.empty)
-    WebsiteContent(scenario.toOption.map(_.name), content, resultUrls)
+    WebsiteContent(
+      scenario.toOption.map(_.name),
+      content,
+      if(isTestScraping) resultUrls.headOption.toList else resultUrls
+    )
   }
 
   private def fetchContent(document: Document, scrapingScenario: ScrapingScenario): Map[String, String] = {

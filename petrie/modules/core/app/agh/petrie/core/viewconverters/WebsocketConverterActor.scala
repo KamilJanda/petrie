@@ -9,7 +9,7 @@ class WebsocketConverterActor(receptionist: ActorRef, configurationViewConverter
   extends Actor {
   override def receive: Receive = {
     case GetUrlsView(url, config) =>
-      receptionist forward GetUrls(url, configurationViewConverter.fromView(config))
+      receptionist forward GetUrls(url, configurationViewConverter.fromView(config, false))
   }
 }
 

@@ -16,6 +16,7 @@ import ScrapingScenario from "./ScrapingScenario";
 import Checkbox from "@material-ui/core/Checkbox";
 
 const requestUrl = "http://localhost:9000/core/links";
+const testRequestUrl = "http://localhost:9000/core/links/test";
 
 const {Map} = require('immutable');
 
@@ -35,7 +36,7 @@ class SimpleCrawler extends React.Component {
         }
     }
 
-    sendRequest = () => {
+    sendRequest = (isTest) => {
 
         console.log(buildRequestBody({
             url: this.state.requestUrl,
@@ -44,8 +45,9 @@ class SimpleCrawler extends React.Component {
             scrapAllIfNoScenario: this.state.scrapAllIfNoScenario,
             scenarios: this.state.scenarios.valueSeq().toArray()
         }));
+        const url = isTest ? testRequestUrl: requestUrl;
 
-        fetch(requestUrl, {
+        fetch(url, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -283,9 +285,18 @@ class SimpleCrawler extends React.Component {
                                 variant="contained"
                                 color="primary"
                                 className={classes.button}
-                                onClick={this.sendRequest}
+                                onClick={() => this.sendRequest(false)}
                             >
                                 Crawl data {this.crawType()}!
+                                <Icon className={classes.rightIcon}>send</Icon>
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                className={classes.button}
+                                onClick={() => this.sendRequest(true)}
+                            >
+                                Test crawling
                                 <Icon className={classes.rightIcon}>send</Icon>
                             </Button>
 

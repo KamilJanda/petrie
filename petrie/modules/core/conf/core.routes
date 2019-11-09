@@ -21,6 +21,22 @@
 POST     /links           @agh.petrie.core.controllers.FetchingLinksController.fetchLinks
 
 ###
+#  summary: fetch specified data with json response, only one url is fetched from given website (only for test purpose)
+#  tags:
+#    - core
+#  responses:
+#    200:
+#      description: success
+#      schema:
+#        $ref: '#/definitions/agh.petrie.core.model.view.FetchedDataView'
+#  parameters:
+#    - name: body
+#      schema:
+#         $ref: '#/definitions/agh.petrie.core.model.view.FetchLinksRequest'
+###
+POST     /links/test           @agh.petrie.core.controllers.FetchingLinksController.fetchLinksTest
+
+###
 #  summary: endpoint for websocket, providing communication with live response after sending message with request, for details about protocol look at '/links' endpoint
 #  tags:
 #    - core
