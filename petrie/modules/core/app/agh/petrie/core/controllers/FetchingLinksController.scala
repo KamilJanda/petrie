@@ -46,7 +46,28 @@ class FetchingLinksController @Inject()(
             case _ =>
               for {
                 _ <- dbConfigProvider.get.db.run(requestHistoryRepository.save(fetchLinksRequest))
-                configuration = configurationViewConverter.fromView(fetchLinksRequest.configuration)
+                configuration = configurationViewConverter.fromView(fetchLinksRequest.configuration, false)
+                fetched <- webScraperProvider.get.getAllLinks(fetchLinksRequest.url, configuration)
+                fetchedView = fetchedUrlsViewConverter.toView(fetched)
+              } yield Ok(Json.toJson(fetchedView))
+          }
+        }
+      )
+  }
+
+  def fetchLinksTest = Action.async(parse.json) { implicit request =>
+    implicit val timeout = Timeout(480 seconds)
+    request.body
+      .validate[FetchLinksRequest]
+      .fold(
+        errors => Future { BadRequest(Json.obj("status" -> "KO", "message" -> JsError.toJson(errors))) },
+        fetchLinksRequest => {
+          configurationValidationService.validate(fetchLinksRequest.configuration) match {
+            case Left(message) => Future { BadRequest(Json.toJson(message)) }
+            case _ =>
+              for {
+                _ <- dbConfigProvider.get.db.run(requestHistoryRepository.save(fetchLinksRequest))
+                configuration = configurationViewConverter.fromView(fetchLinksRequest.configuration, true)
                 fetched <- webScraperProvider.get.getAllLinks(fetchLinksRequest.url, configuration)
                 fetchedView = fetchedUrlsViewConverter.toView(fetched)
               } yield Ok(Json.toJson(fetchedView))

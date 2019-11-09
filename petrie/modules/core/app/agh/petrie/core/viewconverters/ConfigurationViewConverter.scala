@@ -7,13 +7,14 @@ import javax.inject.Singleton
 
 @Singleton
 class ConfigurationViewConverter {
-  def fromView(configurationView: ConfigurationView): Configuration = {
+  def fromView(configurationView: ConfigurationView, isTestScraping: Boolean): Configuration = {
 
     val configuration = configurationView
       .into[Configuration]
       .withFieldComputed(_.noScenarioFallback, view => if (view.scrapAllIfNoScenario) ScrapAll else DontScrap)
       .withFieldComputed(_.scrapingType, view => if (view.scrapDynamically) DynamicScraping else AsyncScraping)
       .withFieldComputed(_.rootScenario, config => getScenarios(config))
+      .withFieldConst(_.isTestScraping, isTestScraping)
       .transform
 
     if (configuration.rootScenario.isEmpty) {

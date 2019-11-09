@@ -30,7 +30,7 @@ class DynamicScrapper(
     case html: Html =>
       val nextScenario = scrapingScenario.flatMap(_.targetScenario)
       val fetchResult =
-        htmlParsingService.fetchContent(html, scrapingScenario.toRight(configuration.noScenarioFallback))
+        htmlParsingService.fetchContent(html, scrapingScenario.toRight(configuration.noScenarioFallback), configuration.isTestScraping)
       fetchResult.urls.foreach { url =>
         context.parent ! ScrapFromUrl(url, depth - 1, nextScenario)
       }

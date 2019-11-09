@@ -4,7 +4,8 @@ case class Configuration(
   rootScenario: List[ScrapingScenario],
   maxSearchDepth: Int,
   noScenarioFallback: FallbackScenario,
-  scrapingType: ScrapingType
+  scrapingType: ScrapingType,
+  isTestScraping: Boolean
 )
 
 final case class ScrapingScenarioId(id: Long) extends AnyVal
