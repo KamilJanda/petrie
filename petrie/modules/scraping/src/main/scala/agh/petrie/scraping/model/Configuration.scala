@@ -28,7 +28,7 @@ object PreScrapingConfiguration {
 
 final case class ScrapingConfiguration(
   elementsToFetchUrlsFrom: List[SelectorConfiguration],
-  elementsToScrapContentFrom: List[SelectorConfiguration],
+  elementsToScrapContentFrom: List[FetchDataSelectorConfiguration],
   topicsToFetchUrlsFrom: List[ScrapingTopic]
 )
 
@@ -52,6 +52,13 @@ final case class SelectorConfiguration(
   selectorType: SelectorType,
   selector: String
 )
+
+final case class FetchDataSelectorConfiguration(
+  name: String,
+  selectorType: SelectorType,
+  selector: String
+)
+
 
 final case class ScrapingTopic(
   topicType: TopicType,

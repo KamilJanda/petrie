@@ -207,7 +207,7 @@ class StreamCrawler extends Component {
 
                                 <TextField
                                     id="depth"
-                                    label="Max request depth"
+                                    label="Max depth of crawling jumps via urls"
                                     className={classes.textField}
                                     margin="normal"
                                     type="number"
@@ -215,6 +215,7 @@ class StreamCrawler extends Component {
                                     InputLabelProps={{
                                         shrink: true,
                                     }}
+
                                 />
 
                                 <FormLabel
@@ -227,13 +228,33 @@ class StreamCrawler extends Component {
                                     aria-label="Crawling Type"
                                     name="Crawling Type"
                                     className={classes.group}
+                                    value={this.state.isTopicalCrawling.toString()}
+                                    onChange={this.handleIsTopicalCrawlingRadio}
+                                >
+                                    <FormControlLabel value="true" control={<Radio color="primary"/>}
+                                                      label="Crawl data using topics"/>
+                                    <FormControlLabel value="false" control={<Radio color="primary"/>}
+                                                      label="Crawl data using selectors"/>
+                                </RadioGroup>
+
+                                <FormLabel
+                                    component="legend"
+                                    className={classes.group}
+                                >
+                                    Website Type
+                                </FormLabel>
+
+                                <RadioGroup
+                                    aria-label="Crawling Type"
+                                    name="Crawling Type"
+                                    className={classes.group}
                                     value={this.state.crawlDynamically.toString()}
                                     onChange={this.handleCrawlingTypeRadio}
                                 >
                                     <FormControlLabel value="true" control={<Radio color="primary"/>}
-                                                      label="Dynamic"/>
+                                                      label="Dynamic and static websites"/>
                                     <FormControlLabel value="false" control={<Radio color="primary"/>}
-                                                      label="Async"/>
+                                                      label="Only static websites"/>
                                 </RadioGroup>
 
                                 <FormLabel
@@ -250,68 +271,17 @@ class StreamCrawler extends Component {
                                     onChange={this.handleCrawlingWhenNoScenarioRadio}
                                 >
                                     <FormControlLabel value="true" control={<Radio color="primary"/>}
-                                                      label="Scrap all"/>
+                                                      label="Scrap all data if no scenario defined"/>
                                     <FormControlLabel value="false" control={<Radio color="primary"/>}
-                                                      label="Scrap none"/>
+                                                      label="Don't scrap data if scenario not defined"/>
                                 </RadioGroup>
-
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    className={classes.button}
-                                    onClick={this.sendRequest}
-                                >
-                                    Send
-                                    <Icon className={classes.rightIcon}>send</Icon>
-                                </Button>
-                                <ButtonGroup variant="contained">
-                                    <Button
-                                        onClick={this.connect}
-                                    >
-                                        Connect
-                                        <Icon className={classes.rightIcon}>send</Icon>
-                                    </Button>
-                                    <Button
-                                        onClick={this.disconnect}
-                                    >
-                                        Disconnect
-                                        <DeleteIcon className={classes.rightIcon}/>
-                                    </Button>
-                                </ButtonGroup>
-                                <Button
-                                    variant="contained"
-                                    className={classes.button}
-                                    onClick={this.clearResponse}
-                                >
-                                    Clear response
-                                </Button>
-
-                                <div>
-                                    <TextField
-                                        id="response"
-                                        label="Response"
-                                        multiline
-                                        rows="6"
-                                        fullWidth
-                                        value={this.state.response}
-                                        className={classes.textField}
-                                        margin="normal"
-                                        variant="outlined"
-                                        InputProps={{
-                                            readOnly: true,
-                                        }}
-                                    />
-                                </div>
-
-                                <h4 className={classes.styleMargin}>Connected: {this.state.isConnected.toString()}</h4>
-
 
                                 <Button
                                     variant="contained"
                                     className={classes.button}
                                     onClick={this.addScrapingScenario}
                                 >
-                                    Add scraping scenario
+                                    Add scenario
                                 </Button>
 
                             </CardContent>
@@ -322,6 +292,57 @@ class StreamCrawler extends Component {
                                     </ol>
                                 </div>
                             </CardContent>
+
+                            <h4 className={classes.styleMargin}>Connected: {this.state.isConnected.toString()}</h4>
+
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                className={classes.button}
+                                onClick={this.sendRequest}
+                            >
+                                Send
+                                <Icon className={classes.rightIcon}>send</Icon>
+                            </Button>
+                            <ButtonGroup variant="contained">
+                                <Button
+                                    onClick={this.connect}
+                                >
+                                    Connect
+                                    <Icon className={classes.rightIcon}>send</Icon>
+                                </Button>
+                                <Button
+                                    onClick={this.disconnect}
+                                >
+                                    Disconnect
+                                    <DeleteIcon className={classes.rightIcon}/>
+                                </Button>
+                            </ButtonGroup>
+                            <Button
+                                variant="contained"
+                                className={classes.button}
+                                onClick={this.clearResponse}
+                            >
+                                Clear response
+                            </Button>
+
+
+                            <div>
+                                <TextField
+                                    id="response"
+                                    label="Response"
+                                    multiline
+                                    rows="6"
+                                    fullWidth
+                                    value={this.state.response}
+                                    className={classes.textField}
+                                    margin="normal"
+                                    variant="outlined"
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                />
+                            </div>
                         </Card>
                     </Grid>
                 </Grid>

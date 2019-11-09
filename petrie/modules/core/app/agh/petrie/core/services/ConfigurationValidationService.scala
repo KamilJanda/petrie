@@ -15,8 +15,24 @@ class ConfigurationValidationService {
       validateTargetDoesNotExists(configurationView),
       validateEmptyScenarioName(configurationView),
       validateDuplicateScenarioName(configurationView),
-      validatedTopicAndSelectorBothPresent(configurationView)
+      validatedTopicAndSelectorBothPresent(configurationView),
+      validateUniqueDataSelectorName(configurationView),
+      validateEmptyDataSelectorName(configurationView)
     ).combineAll.toEither
+  }
+
+  private def validateUniqueDataSelectorName(configurationView: ConfigurationView) = {
+    configurationView.scenarios.forall { scenario =>
+      val names = scenario.scrapingConfiguration.elementsToScrapContentFrom.map(_.name)
+      names.distinct.size == names.size
+    }.trueOrMessage("Duplicate selector names in fetch data from config in one or more scenarios")
+  }
+
+  private def validateEmptyDataSelectorName(configurationView: ConfigurationView) = {
+    configurationView.scenarios
+      .flatMap(_.scrapingConfiguration.elementsToScrapContentFrom.map(_.name))
+      .forall(_ != "")
+      .trueOrMessage("empty selector names in fetch data from config in one or more scenarios")
   }
 
   private def validateNoRootScenario(configurationView: ConfigurationView): Validated[String, Unit] = {

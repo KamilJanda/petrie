@@ -35,10 +35,10 @@ class AsyncScrapper(
       fetchResult.urls.foreach { url =>
         context.parent ! ScrapFromUrl(url, depth - 1, nextScenario)
       }
-      context.parent ! CheckDone(WebsiteData(url, fetchResult.text))
+      context.parent ! CheckDone(WebsiteData(url, fetchResult.usedScenario,  fetchResult.content))
       context.stop(self)
     case Stop =>
-      context.parent ! CheckDone(WebsiteData(url, None))
+      context.parent ! CheckDone(WebsiteData(url, None, Map.empty))
       context.stop(self)
   }
 }

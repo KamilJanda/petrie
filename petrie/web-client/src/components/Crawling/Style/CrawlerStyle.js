@@ -6,6 +6,7 @@ const styles = theme => ({
     textField: {
         marginLeft: theme.spacing(1),
         marginRight: theme.spacing(1),
+        width: '98%',
     },
     dense: {
         marginTop: theme.spacing(2),

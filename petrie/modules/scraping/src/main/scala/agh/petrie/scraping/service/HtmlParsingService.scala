@@ -20,16 +20,16 @@ class HtmlParsingService(urlRegexMatchingService: UrlRegexMatchingService) {
     val resultUrls = absUrls
       .filter(_ != "")
       .filter(urlRegexMatchingService.matchRegex(urlRegex))
-    val content = scenario.toOption.flatMap(fetchContent(document, _))
-    WebsiteContent(content, resultUrls)
+    val content = scenario.toOption.map(fetchContent(document, _)).getOrElse(Map.empty)
+    WebsiteContent(scenario.toOption.map(_.name), content, resultUrls)
   }
 
-  private def fetchContent(document: Document, scrapingScenario: ScrapingScenario): Option[String] = {
-    val text = for {
-      path <- scrapingScenario.scrapingConfiguration.elementsToScrapContentFrom.map(_.selector)
-      el = document.select(path)
-    } yield el.text()
-    text.reduceOption(_ + _)
+  private def fetchContent(document: Document, scrapingScenario: ScrapingScenario): Map[String, String] = {
+    val result = for {
+      selector <- scrapingScenario.scrapingConfiguration.elementsToScrapContentFrom
+      el = document.select(selector.selector)
+    } yield selector.name -> el.text()
+    result.toMap
   }
 
   private def fetchUrls(document: Document, scenario: Either[FallbackScenario, ScrapingScenario]): Seq[String] = {
@@ -73,7 +73,8 @@ object HtmlParsingService {
   final case class Html(body: String)
 
   final case class WebsiteContent(
-    text: Option[String],
-    urls: Seq[String]
+     usedScenario: Option[String],
+     content: Map[String, String],
+     urls: Seq[String]
   )
 }

@@ -35,7 +35,7 @@ case class WriteToElementView(selector: SelectorConfigurationView, text: String,
 
 final case class ScrapingConfigurationView(
   elementsToFetchUrlsFrom: List[SelectorConfigurationView],
-  elementsToScrapContentFrom: List[SelectorConfigurationView],
+  elementsToScrapContentFrom: List[FetchDataSelectorConfigurationView],
   topicsToFetchUrlsFrom: List[ScrapingTopicView]
 )
 
@@ -52,6 +52,12 @@ final case class SelectorConfigurationView(
   selector: String
 )
 
+final case class FetchDataSelectorConfigurationView(
+  name: String,
+  isXpathSelector: Boolean,
+  selector: String
+)
+
 final case class ScrapingTopicView(
   topicType: String,
   topicSelector: String
@@ -61,6 +67,7 @@ object ConfigurationView {
   implicit lazy val idFormat                        = Json.format[ScrapingScenarioId]
   implicit lazy val urlConfigurationViewFormat      = Json.format[UrlConfigurationView]
   implicit lazy val selectorConfigurationViewFormat = Json.format[SelectorConfigurationView]
+  implicit lazy val fetchDataSelectorConfigurationFormat = Json.format[FetchDataSelectorConfigurationView]
   implicit lazy val scrapingTopicViewFormat                = Json.format[ScrapingTopicView]
 
   import agh.petrie.common.ReadsUtils._
