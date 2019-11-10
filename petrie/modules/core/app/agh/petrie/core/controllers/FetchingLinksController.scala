@@ -35,7 +35,7 @@ class FetchingLinksController @Inject()(
   extends AbstractController(cc) {
 
   def fetchLinks = Action.async(parse.json) { implicit request =>
-    implicit val timeout = Timeout(480 seconds)
+    implicit val timeout = Timeout(3600 seconds)
     request.body
       .validate[FetchLinksRequest]
       .fold(

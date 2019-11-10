@@ -40,9 +40,6 @@ export function scenarioBuilder(
         "postScrapingConfiguration": {
             "urlConfiguration": urlConfiguration
         },
-        "topicalScrapingConfiguration": {
-            "topics": topics
-        },
         "isRootScenario": isRootScenario
     }
 }
