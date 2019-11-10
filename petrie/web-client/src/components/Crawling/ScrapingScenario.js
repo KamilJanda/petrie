@@ -11,7 +11,6 @@ import Checkbox from "@material-ui/core/Checkbox";
 import {Combobox} from "react-widgets";
 import Box from "@material-ui/core/Box";
 import 'react-widgets/dist/css/react-widgets.css';
-import { scenarioBuilder } from "./Utils/RequestBuilder";
 import WriteIntoFieldConfig from "./WriteIntoFieldConfig";
 import FetchDataFromConfig from "./FetchDataFromConfig";
 
@@ -119,7 +118,8 @@ class ScrapingScenario extends Component {
             topicsConfigurationCounter: 0,
             isRootScenario: true,
             isDynamicCrawling: props.isDynamicCrawling,
-            isXpathSelector: false
+            isXpathSelector: false,
+            targetScenario: undefined,
         }
     }
 
@@ -135,12 +135,6 @@ class ScrapingScenario extends Component {
         this.props.onChange(this.props.id, this.buildScenario({isRootScenario: newIsRootScenario}))
     };
 
-    handleChangeIsXpathSelector = () => {
-        const newIsXpathSelector = !this.state.isXpathSelector;
-        this.setState({isXpathSelector: newIsXpathSelector});
-        this.props.onChange(this.props.id, this.buildScenario({isXpathSelector: newIsXpathSelector}))
-    };
-
     buildScenario = ({
         name = this.state.name,
         elementsToClick = this.state.elementsToClick,
@@ -152,7 +146,8 @@ class ScrapingScenario extends Component {
         urlConfiguration = this.state.urlConfiguration,
                          topics = this.state.topicsConfiguration,
                          isRootScenario = this.state.isRootScenario,
-        isXpathSelector = this.state.isXpathSelector
+        isXpathSelector = this.state.isXpathSelector,
+        targetScenario = this.state.targetScenario,
     } = {}) => {
         return {
             "name": name,
@@ -182,7 +177,8 @@ class ScrapingScenario extends Component {
             "postScrapingConfiguration": {
                 "urlConfiguration": urlConfiguration.valueSeq().toArray().map(regex => ({regex: regex}))
             },
-            "isRootScenario": isRootScenario
+            "isRootScenario": isRootScenario,
+            "targetScenario": targetScenario
         }
     };
 
@@ -544,14 +540,10 @@ class ScrapingScenario extends Component {
         return this.props.getScenariosNames();
     };
 
-    titleIfNonEmpty(title, array) {
-        const {classes} = this.props;
-        if (array.length > 0) {
-            return (<div className={classes.configPartTitle}><h2>{title}</h2></div>)
-        } else {
-            return (<div></div>)
-        }
-    }
+
+    onTargetChange = (target) => {
+        this.props.onChange(this.props.id, this.buildScenario({targetScenario: target}))
+    };
 
     render() {
         const {classes} = this.props;
