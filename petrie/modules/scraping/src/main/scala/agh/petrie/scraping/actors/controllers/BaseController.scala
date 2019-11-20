@@ -8,13 +8,19 @@ import agh.petrie.scraping.actors.receptionist.SimpleReceptionist.WebsiteData
 import agh.petrie.scraping.model.{Configuration, ScrapingScenario}
 import agh.petrie.scraping.service.ThrottlingService.ScheduledVisitJournal
 import agh.petrie.scraping.service.{ScraperResolverService, ThrottlingService}
-import akka.actor.{Actor, ActorRef}
+import akka.actor.{Actor, ActorLogging, ActorRef}
 
 abstract class BaseController(
   scraperResolverService: ScraperResolverService,
   throttlingService: ThrottlingService,
   configuration: Configuration
-) extends Actor {
+) extends Actor
+  with ActorLogging {
+
+  private implicit val exec = context.dispatcher
+
+  private val frontierPriorityQueue: ActorRef =
+    context.actorOf(FrontierPriorityQueue.props(self).withDispatcher("prio-dispatcher"))
 
   private implicit val exec = context.dispatcher
 

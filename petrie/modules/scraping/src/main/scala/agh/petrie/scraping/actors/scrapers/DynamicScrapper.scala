@@ -8,7 +8,7 @@ import agh.petrie.scraping.actors.scrapers.SeleniumWorker.FetchFromUrl
 import agh.petrie.scraping.model.{Configuration, ScrapingScenario}
 import agh.petrie.scraping.service.HtmlParsingService
 import agh.petrie.scraping.service.HtmlParsingService.Html
-import akka.actor.{Actor, ActorRef, Props}
+import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 
 import scala.concurrent.duration._
 
@@ -20,7 +20,8 @@ class DynamicScrapper(
   htmlParsingService: HtmlParsingService,
   workerRouter: ActorRef,
   timeout: Int
-) extends Actor {
+) extends Actor
+  with ActorLogging {
 
   implicit val exec = context.dispatcher
 
