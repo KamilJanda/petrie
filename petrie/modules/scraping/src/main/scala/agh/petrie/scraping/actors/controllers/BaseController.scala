@@ -1,18 +1,30 @@
 package agh.petrie.scraping.actors.controllers
 
-import agh.petrie.scraping.actors.controllers.BaseController.{CheckDone, ScrapFromUrl, StartScraping}
+import java.net.URL
+
+import agh.petrie.scraping.actors.controllers.BaseController.{AddUrl, CheckDone, ScrapFromUrl, StartScraping}
+import agh.petrie.scraping.actors.controllers.FrontierPriorityQueue.{AddUrlToQueue, HighPriority, UrlNode}
 import agh.petrie.scraping.actors.receptionist.SimpleReceptionist.WebsiteData
-import agh.petrie.scraping.model.{Configuration, FallbackScenario, ScrapingScenario}
-import agh.petrie.scraping.service.ScraperResolverService
+import agh.petrie.scraping.model.{Configuration, ScrapingScenario}
+import agh.petrie.scraping.service.ThrottlingService.ScheduledVisitJournal
+import agh.petrie.scraping.service.{ScraperResolverService, ThrottlingService}
 import akka.actor.{Actor, ActorRef}
 
 abstract class BaseController(
   scraperResolverService: ScraperResolverService,
+  throttlingService: ThrottlingService,
   configuration: Configuration
 ) extends Actor {
 
+  private implicit val exec = context.dispatcher
+
+  private val frontierPriorityQueue: ActorRef =
+    context.actorOf(FrontierPriorityQueue.props(self).withDispatcher("prio-dispatcher"))
+
   def onNegativeDepth(): Unit
   def onCheckDone(
+    scheduledVisitJournal: ScheduledVisitJournal,
+    queuedUrls: Set[UrlNode],
     children: Set[ActorRef],
     websitesData: Set[WebsiteData],
     fetched: WebsiteData,
@@ -21,24 +33,69 @@ abstract class BaseController(
 
   override def receive: Receive = {
     case StartScraping(url) if configuration.maxSearchDepth >= 0 =>
-      context.become(checkingUrls(Set.empty, Set.empty, sender))
+      context.become(checkingUrls(ScheduledVisitJournal.empty, Set.empty, Set.empty, Set.empty, sender))
       configuration.rootScenario.foreach(scenario => {
-        self ! ScrapFromUrl(url, configuration.maxSearchDepth, Some(scenario))
+        self ! AddUrl(url, configuration.maxSearchDepth, Some(scenario))
       })
 
     case _: StartScraping => onNegativeDepth()
   }
 
-  def checkingUrls(children: Set[ActorRef], websitesData: Set[WebsiteData], responseTo: ActorRef): Receive = {
-    case ScrapFromUrl(url, depth, scenario) if depth >= 0 && resolveIfAlreadyScraped(websitesData, url, scenario) =>
-      val worker = scraperResolverService.getScraper(url, depth, scenario, configuration, context)
-      context.become(checkingUrls(children + worker, websitesData + WebsiteData(url, scenario.map(_.name), Map.empty), responseTo))
+  def checkingUrls(
+    scheduledVisitJournal: ScheduledVisitJournal,
+    queuedUrls: Set[UrlNode],
+    children: Set[ActorRef],
+    websitesData: Set[WebsiteData],
+    responseTo: ActorRef
+  ): Receive = {
+
+    case AddUrl(url, depth, scenario) if depth >= 0 && resolveIfAlreadyScraped(websitesData, url, scenario) =>
+      val urlNode        = UrlNode(url, depth, scenario)
+      val host           = new URL(url).getHost
+      val updatedJournal = throttlingService.updateVisitJournal(host, scheduledVisitJournal)
+      val delay          = throttlingService.getDelay(host, updatedJournal)
+      val message        = AddUrlToQueue(urlNode, HighPriority)
+      delay match {
+        case None =>
+          frontierPriorityQueue ! message
+        case Some(delayTime) =>
+          context.system.scheduler.scheduleOnce(delayTime, frontierPriorityQueue, message)
+      }
+      context.become(checkingUrls(updatedJournal, queuedUrls + urlNode, children, websitesData, responseTo))
+
+    case ScrapFromUrl(url, depth, scenario) =>
+      val urlNode = UrlNode(url, depth, scenario)
+      val worker  = scraperResolverService.getScraper(url, depth, scenario, configuration, context)
+      context.become(
+        checkingUrls(
+          scheduledVisitJournal,
+          queuedUrls - urlNode,
+          children + worker,
+          websitesData + WebsiteData(url, scenario.map(_.name), Map.empty),
+          responseTo
+        )
+      )
 
     case CheckDone(websiteData) =>
-      onCheckDone(children, websitesData.map(el => if (el.url == websiteData.url && el.scrapedWithScenario == websiteData.scrapedWithScenario) websiteData else el), websiteData, responseTo)
+      onCheckDone(
+        scheduledVisitJournal,
+        queuedUrls,
+        children,
+        websitesData.map(
+          el =>
+            if (el.url == websiteData.url && el.scrapedWithScenario == websiteData.scrapedWithScenario) websiteData
+            else el
+        ),
+        websiteData,
+        responseTo
+      )
   }
 
-  private def resolveIfAlreadyScraped(websitesData: Set[WebsiteData], url: String, scenario: Option[ScrapingScenario]) = {
+  private def resolveIfAlreadyScraped(
+    websitesData: Set[WebsiteData],
+    url: String,
+    scenario: Option[ScrapingScenario]
+  ) = {
     val maybeScenarioName = scenario.map(_.name)
     !websitesData.exists(data => data.url == url && data.scrapedWithScenario == maybeScenarioName)
   }
@@ -46,13 +103,21 @@ abstract class BaseController(
 
 object BaseController {
 
+  case class StartScraping(url: String)
+
   case class ScrapFromUrl(
     url: String,
     depth: Int,
     scenario: Option[ScrapingScenario]
   )
-  case class StartScraping(url: String)
+
   case class CheckDone(
     websiteData: WebsiteData
+  )
+
+  case class AddUrl(
+    url: String,
+    depth: Int,
+    scenario: Option[ScrapingScenario]
   )
 }
