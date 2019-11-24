@@ -4,6 +4,7 @@ export function buildRequestBody(
         maxSearchDepth,
         scrapDynamically,
         scrapAllIfNoScenario,
+        urlPriorities = [],
         scenarios = []
 
     }
@@ -14,6 +15,7 @@ export function buildRequestBody(
             "maxSearchDepth": parseInt(maxSearchDepth),
             "scrapAllIfNoScenario": scrapAllIfNoScenario,
             "scrapDynamically": scrapDynamically,
+            "urlPriorities": urlPriorities,
             "scenarios": scenarios
         }
     }

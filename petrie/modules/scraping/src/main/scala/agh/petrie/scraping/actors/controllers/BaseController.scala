@@ -3,24 +3,19 @@ package agh.petrie.scraping.actors.controllers
 import java.net.URL
 
 import agh.petrie.scraping.actors.controllers.BaseController.{AddUrl, CheckDone, ScrapFromUrl, StartScraping}
-import agh.petrie.scraping.actors.controllers.FrontierPriorityQueue.{AddUrlToQueue, HighPriority, UrlNode}
+import agh.petrie.scraping.actors.controllers.FrontierPriorityQueue.{AddUrlToQueue, UrlNode}
 import agh.petrie.scraping.actors.receptionist.SimpleReceptionist.WebsiteData
 import agh.petrie.scraping.model.{Configuration, ScrapingScenario}
 import agh.petrie.scraping.service.ThrottlingService.ScheduledVisitJournal
-import agh.petrie.scraping.service.{ScraperResolverService, ThrottlingService}
-import akka.actor.{Actor, ActorLogging, ActorRef}
+import agh.petrie.scraping.service.{ScraperResolverService, ThrottlingService, UrlPriorityService}
+import akka.actor.{Actor, ActorRef}
 
 abstract class BaseController(
   scraperResolverService: ScraperResolverService,
   throttlingService: ThrottlingService,
+  urlPriorityService: UrlPriorityService,
   configuration: Configuration
-) extends Actor
-  with ActorLogging {
-
-  private implicit val exec = context.dispatcher
-
-  private val frontierPriorityQueue: ActorRef =
-    context.actorOf(FrontierPriorityQueue.props(self).withDispatcher("prio-dispatcher"))
+) extends Actor {
 
   private implicit val exec = context.dispatcher
 
@@ -60,7 +55,8 @@ abstract class BaseController(
       val host           = new URL(url).getHost
       val updatedJournal = throttlingService.updateVisitJournal(host, scheduledVisitJournal)
       val delay          = throttlingService.getDelay(host, updatedJournal)
-      val message        = AddUrlToQueue(urlNode, HighPriority)
+      val priority       = urlPriorityService.getPriority(url, configuration.urlPriorities)
+      val message        = AddUrlToQueue(urlNode, priority)
       delay match {
         case None =>
           frontierPriorityQueue ! message

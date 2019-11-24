@@ -1,7 +1,7 @@
 package agh.petrie.scraping.actors.controllers
 
 import agh.petrie.scraping.actors.controllers.BaseController.ScrapFromUrl
-import agh.petrie.scraping.actors.controllers.FrontierPriorityQueue.{AddUrlToQueue, HighPriority, LowPriority, UrlNode}
+import agh.petrie.scraping.actors.controllers.FrontierPriorityQueue._
 import agh.petrie.scraping.model.ScrapingScenario
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.dispatch.{PriorityGenerator, UnboundedStablePriorityMailbox}
@@ -20,8 +20,9 @@ object FrontierPriorityQueue {
 
   sealed trait Priority
 
-  case object HighPriority extends Priority
-  case object LowPriority  extends Priority
+  case object HighPriority     extends Priority
+  case object StandardPriority extends Priority
+  case object LowPriority      extends Priority
 
   case class AddUrlToQueue(urlNode: UrlNode, priority: Priority)
 
@@ -34,6 +35,7 @@ object FrontierPriorityQueue {
 
 class FrontierPriorityQueueMailbox(settings: ActorSystem.Settings, config: Config)
   extends UnboundedStablePriorityMailbox(PriorityGenerator {
-    case AddUrlToQueue(_, HighPriority) => 0
-    case AddUrlToQueue(_, LowPriority)  => 3
+    case AddUrlToQueue(_, HighPriority)     => 0
+    case AddUrlToQueue(_, StandardPriority) => 2
+    case AddUrlToQueue(_, LowPriority)      => 3
   })

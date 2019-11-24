@@ -31,7 +31,7 @@ const styles = theme => ({
         listStyleType: "none",
     },
     scenario: {
-        marginTop: "40px",
+        marginTop: "20px",
         backgroundColor: "#fff",
         borderRadius: "10px",
         boxShadow: "0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22)",

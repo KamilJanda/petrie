@@ -55,7 +55,8 @@ object Dependencies {
   )
 
   val test = Seq(
-    "org.mockito" %% "mockito-scala" % "1.7.1" % Test
+    "org.mockito"       %% "mockito-scala" % "1.7.1"  % Test,
+    "com.typesafe.akka" %% "akka-testkit"  % "2.5.21" % "test"
   )
 
   val all = akka ++ selenium ++ macWire ++ others ++ play ++ guice ++ database ++ time ++ cats ++ test

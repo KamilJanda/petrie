@@ -19,4 +19,6 @@ trait ScrapingModule {
 
   private[scraping] lazy val scraperResolverService = wire[ScraperResolverService]
   private[scraping] lazy val throttlingService      = wire[ThrottlingService]
+  private[scraping] lazy val urlPriorityService     = wire[UrlPriorityService]
+
 }

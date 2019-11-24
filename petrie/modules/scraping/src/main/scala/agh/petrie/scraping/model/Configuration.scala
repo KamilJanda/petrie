@@ -1,7 +1,10 @@
 package agh.petrie.scraping.model
 
+import agh.petrie.scraping.actors.controllers.FrontierPriorityQueue.Priority
+
 case class Configuration(
   rootScenario: List[ScrapingScenario],
+  urlPriorities: List[UrlPriority],
   maxSearchDepth: Int,
   noScenarioFallback: FallbackScenario,
   scrapingType: ScrapingType,
@@ -34,7 +37,7 @@ final case class ScrapingConfiguration(
 )
 
 object ScrapingConfiguration {
-  def empty() = ScrapingConfiguration(List(), List(),List())
+  def empty() = ScrapingConfiguration(List(), List(), List())
 }
 
 final case class PostScrapingConfiguration(
@@ -60,8 +63,12 @@ final case class FetchDataSelectorConfiguration(
   selector: String
 )
 
-
 final case class ScrapingTopic(
   topicType: TopicType,
   topicSelector: String
+)
+
+final case class UrlPriority(
+  url: String,
+  priority: Priority
 )
