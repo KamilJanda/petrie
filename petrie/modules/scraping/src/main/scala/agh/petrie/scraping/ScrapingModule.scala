@@ -1,6 +1,6 @@
 package agh.petrie.scraping
 
-import agh.petrie.scraping.service.{HtmlParsingService, ScraperResolverService, UrlRegexMatchingService}
+import agh.petrie.scraping.service._
 import agh.petrie.scraping.web.AsyncScrapingService
 import akka.actor.ActorSystem
 import com.ning.http.client.AsyncHttpClient
@@ -15,6 +15,8 @@ trait ScrapingModule {
   private[scraping] lazy val htmlParsingService      = wire[HtmlParsingService]
   private[scraping] lazy val urlRegexMatchingService = wire[UrlRegexMatchingService]
   private[scraping] lazy val asyncScrapingService    = wire[AsyncScrapingService]
+  private[scraping] lazy val timeProvider            = wire[SimpleTimeProvider]
 
   private[scraping] lazy val scraperResolverService = wire[ScraperResolverService]
+  private[scraping] lazy val throttlingService      = wire[ThrottlingService]
 }

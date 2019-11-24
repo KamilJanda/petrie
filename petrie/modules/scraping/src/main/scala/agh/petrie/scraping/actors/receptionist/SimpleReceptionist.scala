@@ -4,11 +4,12 @@ import agh.petrie.scraping.actors.controllers.BaseController.StartScraping
 import agh.petrie.scraping.actors.controllers.SimpleController
 import agh.petrie.scraping.actors.receptionist.SimpleReceptionist.{FetchedData, GetUrls, Job}
 import agh.petrie.scraping.model.Configuration
-import agh.petrie.scraping.service.ScraperResolverService
+import agh.petrie.scraping.service.{ScraperResolverService, ThrottlingService}
 import akka.actor.{Actor, ActorRef, Props}
 
 class SimpleReceptionist(
-  scraperResolverService: ScraperResolverService
+  scraperResolverService: ScraperResolverService,
+  throttlingService: ThrottlingService
 ) extends Actor {
 
   override def receive: Receive = idle
@@ -31,8 +32,9 @@ class SimpleReceptionist(
     if (jobs.isEmpty) {
       idle
     } else {
-      val job        = jobs.head
-      val controller = context.actorOf(SimpleController.props(scraperResolverService, job.configuration))
+      val job = jobs.head
+      val controller =
+        context.actorOf(SimpleController.props(scraperResolverService, throttlingService, job.configuration))
       controller ! job.action
       working(jobs)
     }
@@ -41,8 +43,8 @@ class SimpleReceptionist(
 }
 
 object SimpleReceptionist {
-  def props(scraperResolverService: ScraperResolverService) =
-    Props(new SimpleReceptionist(scraperResolverService))
+  def props(scraperResolverService: ScraperResolverService, throttlingService: ThrottlingService) =
+    Props(new SimpleReceptionist(scraperResolverService, throttlingService))
 
   case class GetUrls(rootUrl: String, configuration: Configuration)
   case class FetchedData(

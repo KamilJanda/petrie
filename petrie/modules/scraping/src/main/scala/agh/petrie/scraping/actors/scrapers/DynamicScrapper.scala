@@ -1,6 +1,6 @@
 package agh.petrie.scraping.actors.scrapers
 
-import agh.petrie.scraping.actors.controllers.BaseController.{CheckDone, ScrapFromUrl}
+import agh.petrie.scraping.actors.controllers.BaseController.{AddUrl, CheckDone}
 import agh.petrie.scraping.actors.receptionist.SimpleReceptionist.WebsiteData
 import agh.petrie.scraping.actors.scrapers.AsyncScrapper.Stop
 import agh.petrie.scraping.actors.scrapers.DynamicScrapper.WorkStarted
@@ -30,11 +30,16 @@ class DynamicScrapper(
     case html: Html =>
       val nextScenario = scrapingScenario.flatMap(_.targetScenario)
       val fetchResult =
-        htmlParsingService.fetchContent(html, scrapingScenario.toRight(configuration.noScenarioFallback), configuration.isTestScraping)
+        htmlParsingService.fetchContent(
+          html,
+          scrapingScenario.toRight(configuration.noScenarioFallback),
+          configuration.isTestScraping
+        )
       fetchResult.urls.foreach { url =>
-        context.parent ! ScrapFromUrl(url, depth - 1, nextScenario)
+//        println("Scraper send url to controller: " + url)
+        context.parent ! AddUrl(url, depth - 1, nextScenario)
       }
-      context.parent !  CheckDone(WebsiteData(url, fetchResult.usedScenario, fetchResult.content))
+      context.parent ! CheckDone(WebsiteData(url, fetchResult.usedScenario, fetchResult.content))
       context.stop(self)
     case WorkStarted =>
       context.system.scheduler.scheduleOnce(timeout second, self, Stop)

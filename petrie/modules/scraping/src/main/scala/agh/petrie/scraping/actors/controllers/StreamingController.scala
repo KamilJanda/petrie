@@ -1,29 +1,34 @@
 package agh.petrie.scraping.actors.controllers
 
+import agh.petrie.scraping.actors.controllers.FrontierPriorityQueue.UrlNode
 import agh.petrie.scraping.actors.receptionist.SimpleReceptionist.WebsiteData
 import agh.petrie.scraping.api.BasicScrapingApi.{Complete, Message}
 import agh.petrie.scraping.model.Configuration
-import agh.petrie.scraping.service.ScraperResolverService
+import agh.petrie.scraping.service.ThrottlingService.ScheduledVisitJournal
+import agh.petrie.scraping.service.{ScraperResolverService, ThrottlingService}
 import akka.actor.{ActorRef, PoisonPill, Props}
 
 class StreamingController(
   scraperResolverService: ScraperResolverService,
+  throttlingService: ThrottlingService,
   configuration: Configuration,
   webSocketActor: ActorRef
-) extends BaseController(scraperResolverService, configuration) {
+) extends BaseController(scraperResolverService, throttlingService, configuration) {
   override def onNegativeDepth = stopFetching
 
   override def onCheckDone(
+    scheduledVisitJournal: ScheduledVisitJournal,
+    queuedUrls: Set[UrlNode],
     children: Set[ActorRef],
     websitesData: Set[WebsiteData],
     websiteData: WebsiteData,
     responseTo: ActorRef
   ): Unit = {
     webSocketActor ! Message(websiteData)
-    if ((children - sender).isEmpty) {
+    if ((children - sender).isEmpty && queuedUrls.isEmpty) {
       stopFetching
     } else {
-      context.become(checkingUrls(children - sender, websitesData, responseTo))
+      context.become(checkingUrls(scheduledVisitJournal, queuedUrls, children - sender, websitesData, responseTo))
     }
   }
 
@@ -36,6 +41,11 @@ class StreamingController(
 }
 
 object StreamingController {
-  def props(scraperResolverService: ScraperResolverService, configuration: Configuration, webSocketActor: ActorRef) =
-    Props(new StreamingController(scraperResolverService, configuration, webSocketActor))
+  def props(
+    scraperResolverService: ScraperResolverService,
+    throttlingService: ThrottlingService,
+    configuration: Configuration,
+    webSocketActor: ActorRef
+  ) =
+    Props(new StreamingController(scraperResolverService, throttlingService, configuration, webSocketActor))
 }
