@@ -5,6 +5,7 @@ import play.api.libs.json.Json
 
 case class ConfigurationView(
   scenarios: List[ScrapingScenarioView],
+  urlPriorities: List[UrlPrioritiesView],
   maxSearchDepth: Int,
   scrapAllIfNoScenario: Boolean,
   scrapDynamically: Boolean
@@ -63,12 +64,17 @@ final case class ScrapingTopicView(
   topicSelector: String
 )
 
+final case class UrlPrioritiesView(
+  url: String,
+  priority: String
+)
+
 object ConfigurationView {
-  implicit lazy val idFormat                        = Json.format[ScrapingScenarioId]
-  implicit lazy val urlConfigurationViewFormat      = Json.format[UrlConfigurationView]
-  implicit lazy val selectorConfigurationViewFormat = Json.format[SelectorConfigurationView]
+  implicit lazy val idFormat                             = Json.format[ScrapingScenarioId]
+  implicit lazy val urlConfigurationViewFormat           = Json.format[UrlConfigurationView]
+  implicit lazy val selectorConfigurationViewFormat      = Json.format[SelectorConfigurationView]
   implicit lazy val fetchDataSelectorConfigurationFormat = Json.format[FetchDataSelectorConfigurationView]
-  implicit lazy val scrapingTopicViewFormat                = Json.format[ScrapingTopicView]
+  implicit lazy val scrapingTopicViewFormat              = Json.format[ScrapingTopicView]
 
   import agh.petrie.common.ReadsUtils._
   import play.api.libs.json._
@@ -101,9 +107,10 @@ object ConfigurationView {
   implicit val preScrapingConfigurationElementViewFormat =
     Format(preScrapingConfigurationElementViewReads, preScrapingConfigurationElementViewWrites)
 
-  implicit lazy val preScrapingConfigurationViewFormat     = Json.format[PreScrapingConfigurationView]
-  implicit lazy val scrapingConfigurationViewFormat        = Json.format[ScrapingConfigurationView]
-  implicit lazy val postScrapingConfigurationViewFormat    = Json.format[PostScrapingConfigurationView]
-  implicit lazy val scenarioFormat                         = Json.format[ScrapingScenarioView]
-  implicit lazy val configurationFormat                    = Json.format[ConfigurationView]
+  implicit lazy val preScrapingConfigurationViewFormat  = Json.format[PreScrapingConfigurationView]
+  implicit lazy val scrapingConfigurationViewFormat     = Json.format[ScrapingConfigurationView]
+  implicit lazy val postScrapingConfigurationViewFormat = Json.format[PostScrapingConfigurationView]
+  implicit lazy val scenarioFormat                      = Json.format[ScrapingScenarioView]
+  implicit lazy val urlPrioritiesViewFormat             = Json.format[UrlPrioritiesView]
+  implicit lazy val configurationFormat                 = Json.format[ConfigurationView]
 }

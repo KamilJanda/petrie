@@ -5,15 +5,16 @@ import agh.petrie.scraping.actors.receptionist.SimpleReceptionist.WebsiteData
 import agh.petrie.scraping.api.BasicScrapingApi.{Complete, Message}
 import agh.petrie.scraping.model.Configuration
 import agh.petrie.scraping.service.ThrottlingService.ScheduledVisitJournal
-import agh.petrie.scraping.service.{ScraperResolverService, ThrottlingService}
+import agh.petrie.scraping.service.{ScraperResolverService, ThrottlingService, UrlPriorityService}
 import akka.actor.{ActorRef, PoisonPill, Props}
 
 class StreamingController(
   scraperResolverService: ScraperResolverService,
   throttlingService: ThrottlingService,
+  urlPriorityService: UrlPriorityService,
   configuration: Configuration,
   webSocketActor: ActorRef
-) extends BaseController(scraperResolverService, throttlingService, configuration) {
+) extends BaseController(scraperResolverService, throttlingService, urlPriorityService, configuration) {
   override def onNegativeDepth = stopFetching
 
   override def onCheckDone(
@@ -44,8 +45,17 @@ object StreamingController {
   def props(
     scraperResolverService: ScraperResolverService,
     throttlingService: ThrottlingService,
+    urlPriorityService: UrlPriorityService,
     configuration: Configuration,
     webSocketActor: ActorRef
   ) =
-    Props(new StreamingController(scraperResolverService, throttlingService, configuration, webSocketActor))
+    Props(
+      new StreamingController(
+        scraperResolverService,
+        throttlingService,
+        urlPriorityService,
+        configuration,
+        webSocketActor
+      )
+    )
 }

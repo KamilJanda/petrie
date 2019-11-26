@@ -10,10 +10,10 @@ case class WebScraper(actorSystem: ActorSystem, webScraperConfiguration: WebScra
   with TopLevelActorsDefined {
 
   private[scraping] override val receptionist: ActorRef =
-    actorSystem.actorOf(SimpleReceptionist.props(scraperResolverService, throttlingService))
+    actorSystem.actorOf(SimpleReceptionist.props(scraperResolverService, throttlingService, urlPriorityService))
 
   private[scraping] def getAsyncReceptionist(socket: ActorRef) =
-    StreamingReceptionist.props(scraperResolverService, throttlingService)(socket)
+    StreamingReceptionist.props(scraperResolverService, throttlingService, urlPriorityService)(socket)
 
   def close = {
     actorSystem.stop(receptionist)

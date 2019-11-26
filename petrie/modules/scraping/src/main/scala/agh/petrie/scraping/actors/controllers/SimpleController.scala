@@ -5,14 +5,15 @@ import agh.petrie.scraping.actors.receptionist.SimpleReceptionist
 import agh.petrie.scraping.actors.receptionist.SimpleReceptionist.{FetchedData, WebsiteData}
 import agh.petrie.scraping.model.Configuration
 import agh.petrie.scraping.service.ThrottlingService.ScheduledVisitJournal
-import agh.petrie.scraping.service.{ScraperResolverService, ThrottlingService}
+import agh.petrie.scraping.service.{ScraperResolverService, ThrottlingService, UrlPriorityService}
 import akka.actor.{ActorRef, Props}
 
 class SimpleController(
   scraperResolverService: ScraperResolverService,
   throttlingService: ThrottlingService,
+  urlPriorityService: UrlPriorityService,
   configuration: Configuration
-) extends BaseController(scraperResolverService, throttlingService, configuration) {
+) extends BaseController(scraperResolverService, throttlingService, urlPriorityService, configuration) {
 
   override def onNegativeDepth(): Unit =
     sender ! FetchedData(Set())
@@ -38,7 +39,8 @@ object SimpleController {
   def props(
     scraperResolverService: ScraperResolverService,
     throttlingService: ThrottlingService,
+    urlPriorityService: UrlPriorityService,
     configuration: Configuration
   ) =
-    Props(new SimpleController(scraperResolverService, throttlingService, configuration))
+    Props(new SimpleController(scraperResolverService, throttlingService, urlPriorityService, configuration))
 }

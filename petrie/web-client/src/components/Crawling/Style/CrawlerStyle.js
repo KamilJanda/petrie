@@ -45,6 +45,9 @@ const styles = theme => ({
         margin: theme.spacing(1),
         marginTop: theme.spacing(4)
     },
+    notVisible: {
+        display: "none"
+    },
 });
 
 export default styles

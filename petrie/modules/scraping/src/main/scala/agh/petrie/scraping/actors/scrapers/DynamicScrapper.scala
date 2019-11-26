@@ -36,7 +36,6 @@ class DynamicScrapper(
           configuration.isTestScraping
         )
       fetchResult.urls.foreach { url =>
-//        println("Scraper send url to controller: " + url)
         context.parent ! AddUrl(url, depth - 1, nextScenario)
       }
       context.parent ! CheckDone(WebsiteData(url, fetchResult.usedScenario, fetchResult.content))

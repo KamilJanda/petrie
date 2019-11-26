@@ -4,12 +4,13 @@ import agh.petrie.scraping.actors.controllers.BaseController.StartScraping
 import agh.petrie.scraping.actors.controllers.StreamingController
 import agh.petrie.scraping.actors.receptionist.StreamingReceptionist.GetUrls
 import agh.petrie.scraping.model.Configuration
-import agh.petrie.scraping.service.{ScraperResolverService, ThrottlingService}
+import agh.petrie.scraping.service.{ScraperResolverService, ThrottlingService, UrlPriorityService}
 import akka.actor.{Actor, ActorRef, Props}
 
 class StreamingReceptionist(
   scraperResolverService: ScraperResolverService,
   throttlingService: ThrottlingService,
+  urlPriorityService: UrlPriorityService,
   socket: ActorRef
 ) extends Actor {
 
@@ -24,15 +25,21 @@ class StreamingReceptionist(
     configuration: Configuration
   ) = {
     val controller =
-      context.actorOf(StreamingController.props(scraperResolverService, throttlingService, configuration, socket))
+      context.actorOf(
+        StreamingController.props(scraperResolverService, throttlingService, urlPriorityService, configuration, socket)
+      )
     controller ! StartScraping(rootUrl)
   }
 }
 
 object StreamingReceptionist {
 
-  def props(scraperResolverService: ScraperResolverService, throttlingService: ThrottlingService)(socket: ActorRef) =
-    Props(new StreamingReceptionist(scraperResolverService, throttlingService, socket))
+  def props(
+    scraperResolverService: ScraperResolverService,
+    throttlingService: ThrottlingService,
+    urlPriorityService: UrlPriorityService
+  )(socket: ActorRef) =
+    Props(new StreamingReceptionist(scraperResolverService, throttlingService, urlPriorityService, socket))
 
   case class GetUrls(rootUrl: String, configuration: Configuration)
 }

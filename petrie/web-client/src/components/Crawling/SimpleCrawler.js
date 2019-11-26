@@ -13,7 +13,7 @@ import FormLabel from "@material-ui/core/FormLabel";
 import styles from "./Style/CrawlerStyle";
 import {buildRequestBody, scenarioBuilder} from "./Utils/RequestBuilder";
 import ScrapingScenario from "./ScrapingScenario";
-import Checkbox from "@material-ui/core/Checkbox";
+import UrlPriority from "./UrlPriority";
 
 const requestUrl = "http://localhost:9000/core/links";
 const testRequestUrl = "http://localhost:9000/core/links/test";
@@ -32,7 +32,10 @@ class SimpleCrawler extends React.Component {
             scrapingScenariosView: [],
             scenarios: new Map(),
             scrapingScenariosCounter: 0,
-            isTopicalCrawling: false
+            isTopicalCrawling: false,
+            urlPrioritiesView: [],
+            urlPriorities: new Map(),
+            urlPrioritiesCounter: 0,
         }
     }
 
@@ -43,6 +46,7 @@ class SimpleCrawler extends React.Component {
             maxSearchDepth: this.state.depth,
             scrapDynamically: this.state.crawlDynamically,
             scrapAllIfNoScenario: this.state.scrapAllIfNoScenario,
+            urlPriorities: this.state.urlPriorities.valueSeq().toArray(),
             scenarios: this.state.scenarios.valueSeq().toArray()
         }));
         const url = isTest ? testRequestUrl: requestUrl;
@@ -59,6 +63,7 @@ class SimpleCrawler extends React.Component {
                     maxSearchDepth: this.state.depth,
                     scrapDynamically: this.state.crawlDynamically,
                     scrapAllIfNoScenario: this.state.scrapAllIfNoScenario,
+                    urlPriorities: this.state.urlPriorities.valueSeq().toArray(),
                     scenarios: this.state.scenarios.valueSeq().toArray()
                 })
             )
@@ -89,6 +94,10 @@ class SimpleCrawler extends React.Component {
         this.setState(prevState => ({scenarios: prevState.scenarios.set(scenarioId, value)}));
     };
 
+    handleUrlPriorityChange = (urlPriorityId, value) => {
+        this.setState(prevState => ({urlPriorities: prevState.urlPriorities.set(urlPriorityId, value)}));
+    };
+
     addScrapingScenario = () => {
         const key = this.state.scrapingScenariosCounter;
 
@@ -116,6 +125,33 @@ class SimpleCrawler extends React.Component {
 
         this.setState({
             scrapingScenariosView: update
+        })
+    };
+
+    addUrlPriority = () => {
+        const key = this.state.urlPrioritiesCounter;
+        const priority = "LowPriority";
+
+        this.setState(prevState => ({
+            urlPrioritiesView: [...prevState.urlPrioritiesView,
+                <UrlPriority
+                    key={key}
+                    id={key}
+                    onChange={this.handleUrlPriorityChange}
+                    close={this.deleteUrlPriority}
+                    defaultPriority={priority}
+                />
+            ],
+            urlPrioritiesCounter: key + 1
+        }));
+        this.handleUrlPriorityChange(key, {url: "", priority: priority})
+    };
+
+    deleteUrlPriority = (itemId) => {
+        const update = this.state.urlPrioritiesView.filter(el => el.key != itemId);
+
+        this.setState({
+            urlPrioritiesView: update
         })
     };
 
@@ -249,6 +285,21 @@ class SimpleCrawler extends React.Component {
 
                                 <ButtonGroup
                                     variant="contained"
+                                    className={classes.buttonGroup}
+                                >
+                                    <Button
+                                        onClick={this.addUrlPriority}>
+                                        Add host with its search priority
+                                    </Button>
+                                </ButtonGroup>
+                                <div>
+                                    <ol>
+                                        {this.state.urlPrioritiesView}
+                                    </ol>
+                                </div>
+
+                                <ButtonGroup
+                                    variant="contained"
                                     className={classes.buttonGroup}>
                                     <Button
                                         onClick={this.addScrapingScenario}>
@@ -258,6 +309,7 @@ class SimpleCrawler extends React.Component {
                             </CardContent>
 
                             <CardContent>
+
                                 <div>
                                     <ol>
                                         {this.state.scrapingScenariosView}
