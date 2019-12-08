@@ -1,18 +1,21 @@
 package agh.petrie.scraping.service
 
-import agh.petrie.scraping.model.{Configuration, DontScrap, FallbackScenario, ScrapAll, ScrapingScenario}
+import agh.petrie.scraping.model.{DontScrap, FallbackScenario, ScrapingScenario}
 import agh.petrie.scraping.service.HtmlParsingService.{Html, WebsiteContent}
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
-import us.codecraft.xsoup.Xsoup
 
 import scala.collection.JavaConverters._
 import scala.util.matching.Regex
 
 class HtmlParsingService(urlRegexMatchingService: UrlRegexMatchingService) {
 
-  def fetchContent(html: Html, scenario: Either[FallbackScenario, ScrapingScenario], isTestScraping: Boolean): WebsiteContent = {
+  def fetchContent(
+    html: Html,
+    scenario: Either[FallbackScenario, ScrapingScenario],
+    isTestScraping: Boolean
+  ): WebsiteContent = {
     val document = Jsoup.parse(html.body)
     val absUrls  = fetchUrls(document, scenario)
     val urlRegex: Seq[Regex] =
@@ -24,7 +27,7 @@ class HtmlParsingService(urlRegexMatchingService: UrlRegexMatchingService) {
     WebsiteContent(
       scenario.toOption.map(_.name),
       content,
-      if(isTestScraping) resultUrls.headOption.toList else resultUrls
+      if (isTestScraping) resultUrls.headOption.toList else resultUrls
     )
   }
 
@@ -77,8 +80,8 @@ object HtmlParsingService {
   final case class Html(body: String)
 
   final case class WebsiteContent(
-     usedScenario: Option[String],
-     content: Map[String, String],
-     urls: Seq[String]
+    usedScenario: Option[String],
+    content: Map[String, String],
+    urls: Seq[String]
   )
 }
