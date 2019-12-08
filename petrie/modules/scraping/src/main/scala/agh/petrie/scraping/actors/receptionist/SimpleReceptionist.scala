@@ -29,7 +29,7 @@ class SimpleReceptionist(
       context.become(working(jobs :+ Job(sender, configuration, StartScraping(url))))
   }
 
-  private def runNextJob(jobs: Vector[Job]): Receive = {
+  def runNextJob(jobs: Vector[Job]): Receive = {
     if (jobs.isEmpty) {
       idle
     } else {
@@ -64,5 +64,5 @@ object SimpleReceptionist {
     content: Map[String, String]
   )
 
-  private case class Job(client: ActorRef, configuration: Configuration, action: StartScraping)
+  case class Job(client: ActorRef, configuration: Configuration, action: StartScraping)
 }

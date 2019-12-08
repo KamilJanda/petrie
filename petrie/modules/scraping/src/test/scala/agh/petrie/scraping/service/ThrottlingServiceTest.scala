@@ -4,14 +4,17 @@ import java.time.Instant
 
 import agh.petrie.scraping.WebScraperConfiguration
 import agh.petrie.scraping.service.ThrottlingService.ScheduledVisitJournal
+import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchersSugar
 import org.mockito.BDDMockito.given
+import org.scalatest.junit.JUnitRunner
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
+@RunWith(classOf[JUnitRunner])
 class ThrottlingServiceTest extends FlatSpec with Matchers with MockitoSugar with ArgumentMatchersSugar {
 
   import ThrottlingServiceTest._

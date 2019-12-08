@@ -19,7 +19,7 @@ abstract class BaseController(
 
   private implicit val exec = context.dispatcher
 
-  private val frontierPriorityQueue: ActorRef =
+  lazy val frontierPriorityQueue: ActorRef =
     context.actorOf(FrontierPriorityQueue.props(self).withDispatcher("prio-dispatcher"))
 
   def onNegativeDepth(): Unit

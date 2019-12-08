@@ -19,7 +19,7 @@ class StreamingReceptionist(
       stream(url, configuration.maxSearchDepth, configuration)
   }
 
-  private def stream(
+  def stream(
     rootUrl: String,
     depth: Int,
     configuration: Configuration
